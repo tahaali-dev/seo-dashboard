@@ -31,6 +31,20 @@ export async function POST(req: Request) {
       const textContent = $('body').text().replace(/\s+/g, ' ').trim()
       const wordCount = textContent.split(' ').length
 
+      // Advanced Keyword Extraction
+      const stopWords = new Set(['the', 'and', 'a', 'to', 'of', 'in', 'i', 'is', 'that', 'it', 'on', 'you', 'this', 'for', 'but', 'with', 'are', 'have', 'be', 'at', 'or', 'as', 'was', 'so', 'if', 'out', 'not', 'we', 'my', 'by', 'about', 'from', 'an', 'they', 'your', 'which', 'what', 'can', 'has', 'all', 'there', 'will', 'more', 'when', 'who', 'how'])
+      
+      const cleanText = $('p, h1, h2, h3, li, span').text().toLowerCase().replace(/[^a-z\s]/g, '')
+      const words = cleanText.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w))
+      
+      const wordCounts: Record<string, number> = {}
+      words.forEach(w => { wordCounts[w] = (wordCounts[w] || 0) + 1 })
+      
+      const topKeywords = Object.entries(wordCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([word, count]) => ({ word, count, density: ((count / words.length) * 100).toFixed(2) }))
+
       // Extract Metadata
       const metadata = {
         title: $('title').text().trim(),
@@ -54,23 +68,56 @@ export async function POST(req: Request) {
           schemaFound = true
       })
 
-      // Extract Links
+      // Extract Links and actively ping them
       const links = {
         internal: 0,
         external: 0,
         insecureOutbound: 0
       }
+      
+      const uniqueOutboundUrls = new Set<string>()
+      
       $('a[href]').each((_, el) => {
         const href = $(el).attr('href') || ''
         if (href.startsWith('http://') && !href.includes(new URL(page.url).hostname)) {
             links.insecureOutbound++
             links.external++
+            uniqueOutboundUrls.add(href)
         } else if (href.startsWith('https://') && !href.includes(new URL(page.url).hostname)) {
             links.external++
-        } else {
+            uniqueOutboundUrls.add(href)
+        } else if (href.startsWith('/') || href.includes(new URL(page.url).hostname)) {
             links.internal++
         }
       })
+
+      const brokenLinks: Array<{ url: string, status: number }> = []
+      
+      // Ping external links to check for 404s and 301s
+      // We limit to 10 to avoid stalling the entire crawl on large pages
+      const linksToPing = Array.from(uniqueOutboundUrls).slice(0, 10)
+      
+      await Promise.allSettled(linksToPing.map(async (url) => {
+        try {
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
+          
+          const response = await fetch(url, { 
+            method: 'HEAD', 
+            redirect: 'manual', 
+            signal: controller.signal 
+          })
+          clearTimeout(timeoutId)
+          
+          if (response.status >= 300 && response.status < 400) {
+            brokenLinks.push({ url, status: response.status }) // Redirect
+          } else if (response.status >= 400) {
+            brokenLinks.push({ url, status: response.status }) // Broken
+          }
+        } catch (e) {
+          brokenLinks.push({ url, status: 500 }) // Network error / timeout
+        }
+      }))
 
       // Extract Images
       const missingAltSrcs: string[] = []
@@ -104,6 +151,8 @@ export async function POST(req: Request) {
           headings: JSON.stringify(headings),
           links: JSON.stringify(links),
           images: JSON.stringify(images),
+          keywords: JSON.stringify(topKeywords),
+          brokenLinks: JSON.stringify(brokenLinks),
           schema: schemaFound ? "PRESENT" : "MISSING"
         }
       })

@@ -9,7 +9,8 @@ datasource db {
 model Project {
   id          String   @id @default(cuid())
   name        String
-  oldWebsite  String
+  auditType   String   @default("MIGRATION") // 'FRESH' or 'MIGRATION'
+  oldWebsite  String?
   newWebsite  String
   oldSitemap  String?
   newSitemap  String?
@@ -38,6 +39,8 @@ model Page {
   schema            String?
   images            String?
   links             String?
+  keywords          String?
+  brokenLinks       String?
   checklistProgress String?
 
   project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)

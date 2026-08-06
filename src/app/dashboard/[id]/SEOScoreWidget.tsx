@@ -8,7 +8,7 @@ export default function SEOScoreWidget({ scores }: { scores: any }) {
       
       {/* Left: Donut Chart */}
       <div className="flex-shrink-0 flex flex-col items-center">
-        <h3 className="font-semibold text-slate-300 mb-4 self-start tracking-wide uppercase text-sm">On-page score</h3>
+
         <div className="relative w-48 h-48">
           <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90 drop-shadow-md">
             {/* Background Circle */}
@@ -33,9 +33,7 @@ export default function SEOScoreWidget({ scores }: { scores: any }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-4xl font-bold text-white drop-shadow">{overall}%</span>
             <span className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-medium">Score</span>
-            <button className="mt-2 text-[10px] border border-slate-600 rounded px-3 py-1 hover:bg-slate-700 text-slate-300 uppercase tracking-widest transition-colors">
-              Embed
-            </button>
+
           </div>
         </div>
       </div>

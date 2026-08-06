@@ -17,12 +17,14 @@ export default async function PageReport({ params }: { params: Promise<{ id: str
 
   if (!page) return <div>Page not found</div>
 
-  let metadata: any = {}, headings: any = {}, links: any = {}, images: any = {}
+  let metadata: any = {}, headings: any = {}, links: any = {}, images: any = {}, keywords: any = [], brokenLinks: any = []
   try {
     if (page.metadata) metadata = JSON.parse(page.metadata)
     if (page.headings) headings = JSON.parse(page.headings)
     if (page.links) links = JSON.parse(page.links)
     if (page.images) images = JSON.parse(page.images)
+    if (page.keywords) keywords = JSON.parse(page.keywords)
+    if (page.brokenLinks) brokenLinks = JSON.parse(page.brokenLinks)
   } catch (e) {}
 
   // Scoring logic for this page
@@ -143,12 +145,28 @@ export default async function PageReport({ params }: { params: Promise<{ id: str
             </div>
           </div>
 
-          {/* Page Quality */}
+          {/* Content & Keywords */}
           <div className="bg-slate-800/30 rounded-xl border border-slate-700 p-6">
             <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-              Page Quality <span className="text-sm font-normal text-slate-400">({scores.categories['Page quality']}%)</span>
+              Content & Keywords
             </h3>
-            <div className="flex flex-col">
+            
+            {keywords.length > 0 && (
+              <div className="mb-6">
+                <span className="text-sm font-semibold text-slate-400 uppercase tracking-wider block mb-3">Top Keyword Density (TF-IDF)</span>
+                <div className="flex flex-wrap gap-2">
+                  {keywords.map((kw: any, idx: number) => (
+                    <div key={idx} className="bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-sm group hover:border-indigo-500/50 transition-colors">
+                      <span className="font-semibold text-slate-200">{kw.word}</span>
+                      <span className="text-xs bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">{kw.count}</span>
+                      <span className={`text-xs font-bold ${parseFloat(kw.density) > 5 ? 'text-rose-400' : 'text-emerald-400'}`}>{kw.density}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col border-t border-slate-700/50 pt-2">
               {renderDataRow('Word Count', metadata.wordCount, 'Page quality')}
               {renderDataRow('HTML Size', metadata.htmlSize ? `${Math.round(metadata.htmlSize / 1024)} KB` : 'N/A', 'Page quality')}
             </div>
@@ -159,7 +177,30 @@ export default async function PageReport({ params }: { params: Promise<{ id: str
             <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
               Links <span className="text-sm font-normal text-slate-400">({scores.categories['Links']}%)</span>
             </h3>
-            <div className="flex flex-col">
+            
+            {brokenLinks.length > 0 && (
+              <div className="mb-6 bg-slate-900/50 rounded-lg p-4 border border-slate-700/50">
+                <span className="text-sm font-semibold text-slate-400 uppercase tracking-wider block mb-3">Broken & Redirecting Outbound Links</span>
+                <ul className="space-y-2">
+                  {brokenLinks.map((bl: any, idx: number) => {
+                    const isDead = bl.status >= 400 || bl.status === 500
+                    return (
+                      <li key={idx} className="flex items-start gap-2 text-sm">
+                        {isDead ? <XCircleIcon className="w-5 h-5 text-rose-400 flex-shrink-0" /> : <ExclamationTriangleIcon className="w-5 h-5 text-amber-400 flex-shrink-0" />}
+                        <div className="flex-1 min-w-0">
+                          <span className={`font-mono text-xs mr-2 px-1.5 py-0.5 rounded ${isDead ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                            {bl.status === 500 ? 'ERR' : bl.status}
+                          </span>
+                          <span className="text-slate-300 break-all">{bl.url}</span>
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex flex-col border-t border-slate-700/50 pt-2">
               {renderDataRow('Internal Links', links.internal, 'Links')}
               {renderDataRow('External Links', links.external, 'Links')}
             </div>

@@ -72,12 +72,14 @@ export async function POST(req: Request) {
       }
       if (page.crawlStatus === 'PENDING') continue
 
-      let metadata, headings, links, images
+      let metadata, headings, links, images, keywords, brokenLinks
       try {
         metadata = page.metadata ? JSON.parse(page.metadata) : null
         headings = page.headings ? JSON.parse(page.headings) : null
         links = page.links ? JSON.parse(page.links) : null
         images = page.images ? JSON.parse(page.images) : null
+        keywords = page.keywords ? JSON.parse(page.keywords) : null
+        brokenLinks = page.brokenLinks ? JSON.parse(page.brokenLinks) : null
       } catch (e) {
         continue
       }
@@ -135,6 +137,16 @@ export async function POST(req: Request) {
         addIssue(page.id, 'Page quality', 'MEDIUM', 'Large Page Size', `HTML payload exceeds 2MB (${Math.round(metadata.htmlSize / 1024)} KB).`)
       }
 
+      if (keywords && keywords.length > 0) {
+        const topKeyword = keywords[0]
+        if (parseFloat(topKeyword.density) > 5.0) {
+          addIssue(page.id, 'Page quality', 'HIGH', 'Keyword Stuffing Risk', `The keyword "${topKeyword.word}" has a very high density of ${topKeyword.density}%.`)
+        }
+        if (topKeyword.count < 3 && metadata?.wordCount && metadata.wordCount > 300) {
+          addIssue(page.id, 'Page quality', 'LOW', 'Unfocused Content', `The most frequent keyword "${topKeyword.word}" only appears ${topKeyword.count} times. The page lacks a clear topic focus.`)
+        }
+      }
+
       // --- Category 5: Links ---
       if (links) {
         if (links.internal < 2) {
@@ -142,6 +154,22 @@ export async function POST(req: Request) {
         }
         if (links.internal + links.external > 100) {
           addIssue(page.id, 'Links', 'LOW', 'Too Many On-Page Links', 'Page has over 100 total links, diluting link equity.')
+        }
+      }
+
+      if (brokenLinks && brokenLinks.length > 0) {
+        let deadCount = 0
+        let redirectCount = 0
+        brokenLinks.forEach((bl: any) => {
+          if (bl.status >= 400) deadCount++
+          else if (bl.status >= 300) redirectCount++
+        })
+
+        if (deadCount > 0) {
+          addIssue(page.id, 'Links', 'CRITICAL', 'Broken Outbound Links', `Found ${deadCount} outbound links returning a 4xx or 5xx error.`)
+        }
+        if (redirectCount > 0) {
+          addIssue(page.id, 'Links', 'MEDIUM', 'Redirect Chain Risk', `Found ${redirectCount} outbound links that redirect (3xx). Link directly to the final destination.`)
         }
       }
 

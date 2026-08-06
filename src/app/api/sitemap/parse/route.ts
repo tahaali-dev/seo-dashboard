@@ -56,14 +56,30 @@ export async function POST(req: Request) {
       }
     }
 
+    const addFallbackUrl = async (url: string, siteType: string) => {
+      const exists = await prisma.page.findFirst({ where: { projectId: project.id, url, siteType } })
+      if (!exists) {
+        await prisma.page.create({ data: { projectId: project.id, url, siteType } })
+        return 1
+      }
+      return 0
+    }
+
     let oldCount = 0
     let newCount = 0
 
     if (project.oldSitemap) {
       oldCount = await fetchSitemap(project.oldSitemap, 'OLD')
     }
+    if (oldCount === 0 && project.oldWebsite) {
+      oldCount = await addFallbackUrl(project.oldWebsite, 'OLD')
+    }
+
     if (project.newSitemap) {
       newCount = await fetchSitemap(project.newSitemap, 'NEW')
+    }
+    if (newCount === 0 && project.newWebsite) {
+      newCount = await addFallbackUrl(project.newWebsite, 'NEW')
     }
 
     return NextResponse.json({ success: true, oldCount, newCount })
