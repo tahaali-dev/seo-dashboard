@@ -30,20 +30,42 @@ export default function CrawlerClient({ project, initialPages }: { project: any,
     const pendingPages = pages.filter(p => p.crawlStatus === 'PENDING')
     
     let completed = 0
+    const CONCURRENCY = 5
+    const pool = new Set<Promise<any>>()
+
     for (const page of pendingPages) {
-      try {
-        await fetch('/api/crawl', {
-          method: 'POST',
-          body: JSON.stringify({ pageId: page.id })
-        })
-      } catch (err) {
-        console.error(`Failed to crawl ${page.url}`)
+      const promise = fetch('/api/crawl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pageId: page.id })
+      })
+      .then(res => res.json())
+      .then(data => {
+        // Update local state live as they finish
+        setPages(prev => prev.map(p => 
+          p.id === page.id 
+            ? { ...p, crawlStatus: data.success ? 'SUCCESS' : 'ERROR', seoScore: data.seoScore || null } 
+            : p
+        ))
+      })
+      .catch(err => {
+        console.error(`Failed to crawl ${page.url}`, err)
+      })
+      .finally(() => {
+        completed++
+        setCrawlProgress((completed / pendingPages.length) * 100)
+        pool.delete(promise)
+      })
+
+      pool.add(promise)
+
+      if (pool.size >= CONCURRENCY) {
+        await Promise.race(pool)
       }
-      completed++
-      setCrawlProgress((completed / pendingPages.length) * 100)
     }
     
-    alert('Crawling complete! Refresh to see updated scores.')
+    await Promise.all(pool)
+    alert('Crawling complete! We are now ready to generate Issues.')
     setIsCrawling(false)
   }
 
