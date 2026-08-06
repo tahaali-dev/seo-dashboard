@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import Link from 'next/link'
+import DeleteProjectButton from './DeleteProjectButton'
 
 const adapter = new PrismaBetterSqlite3({ url: 'file:./dev.db' })
 const prisma = new PrismaClient({ adapter })
@@ -48,16 +49,19 @@ export default async function ProjectsList() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map(project => (
-              <Link 
-                href={`/dashboard/${project.id}`} 
+              <div 
                 key={project.id}
-                className="group bg-slate-800/40 hover:bg-slate-800/80 border border-slate-700 hover:border-indigo-500/50 rounded-xl p-6 transition-all shadow-sm hover:shadow-indigo-500/10 flex flex-col"
+                className="group relative bg-slate-800/40 hover:bg-slate-800/80 border border-slate-700 hover:border-indigo-500/50 rounded-xl p-6 transition-all shadow-sm hover:shadow-indigo-500/10 flex flex-col"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <h2 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-1">{project.name}</h2>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${project.auditType === 'FRESH' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/20 text-indigo-400'}`}>
-                    {project.auditType}
-                  </span>
+                <Link href={`/dashboard/${project.id}`} className="absolute inset-0 z-0" />
+                <div className="flex justify-between items-start mb-4 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-1">{project.name}</h2>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${project.auditType === 'FRESH' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/20 text-indigo-400'}`}>
+                      {project.auditType}
+                    </span>
+                  </div>
+                  <DeleteProjectButton id={project.id} />
                 </div>
 
                 <div className="space-y-2 mb-6 flex-1">
@@ -92,7 +96,7 @@ export default async function ProjectsList() {
                     {project.createdAt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

@@ -50,3 +50,9 @@ export async function createProject(formData: FormData) {
 
   redirect(`/dashboard/${project.id}`)
 }
+
+export async function deleteProject(id: string) {
+  await prisma.project.delete({ where: { id } })
+  const { revalidatePath } = await import('next/cache')
+  revalidatePath('/')
+}
