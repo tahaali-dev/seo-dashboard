@@ -133,9 +133,19 @@ export default async function PageReport({ params }: { params: Promise<{ id: str
                   <div className="space-y-1">
                     <span className="text-rose-400 font-semibold">{images.missingAlt} broken images found:</span>
                     <ul className="list-disc pl-4 text-xs text-slate-400">
-                      {images.missingAltSrcs.map((src: string, idx: number) => (
-                        <li key={idx} className="truncate max-w-md" title={src}>{src}</li>
-                      ))}
+                      {images.missingAltSrcs.map((src: string, idx: number) => {
+                        let fullUrl = src
+                        try {
+                          fullUrl = src.startsWith('http') ? src : new URL(src, page.url).href
+                        } catch(e) {}
+                        return (
+                          <li key={idx} className="truncate max-w-md" title={src}>
+                            <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-indigo-400 hover:text-indigo-300 transition-colors">
+                              {src}
+                            </a>
+                          </li>
+                        )
+                      })}
                     </ul>
                   </div>
                 ) : images.missingAlt, 

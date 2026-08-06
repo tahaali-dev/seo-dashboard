@@ -3,14 +3,24 @@
 import { useState } from 'react'
 
 export default function IssuesTable({ issues }: { issues: any[] }) {
-  const [filter, setFilter] = useState('ALL')
+  const [severityFilter, setSeverityFilter] = useState('ALL')
+  const [categoryFilter, setCategoryFilter] = useState('ALL')
+  const [searchQuery, setSearchQuery] = useState('')
   const [expandedCategories, setExpandedCategories] = useState<string[]>([])
 
   const toggleCategory = (cat: string) => {
     setExpandedCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])
   }
 
-  const filteredIssues = filter === 'ALL' ? issues : issues.filter(i => i.severity === filter)
+  const filteredIssues = issues.filter(i => {
+    if (severityFilter !== 'ALL' && i.severity !== severityFilter) return false
+    if (categoryFilter !== 'ALL' && i.category !== categoryFilter) return false
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      if (!i.title.toLowerCase().includes(q) && !(i.description || '').toLowerCase().includes(q) && !(i.page?.url || '').toLowerCase().includes(q)) return false
+    }
+    return true
+  })
   
   const grouped: Record<string, typeof issues> = {}
   filteredIssues.forEach(issue => {
@@ -25,17 +35,36 @@ export default function IssuesTable({ issues }: { issues: any[] }) {
     <div className="bg-slate-800/30 rounded-xl border border-slate-700">
       <div className="p-4 border-b border-slate-700 flex justify-between items-center">
         <h2 className="text-xl font-semibold text-white">Detected Issues</h2>
-        <select 
-          value={filter} 
-          onChange={(e) => setFilter(e.target.value)}
-          className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2"
-        >
-          <option value="ALL">All Severities</option>
-          <option value="CRITICAL">Critical Only</option>
-          <option value="HIGH">High Only</option>
-          <option value="MEDIUM">Medium Only</option>
-          <option value="LOW">Low Only</option>
-        </select>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input 
+            type="text" 
+            placeholder="Search issues or URLs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 w-full sm:w-64"
+          />
+          <select 
+            value={categoryFilter} 
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2"
+          >
+            <option value="ALL">All Categories</option>
+            {Array.from(new Set(issues.map(i => i.category || 'Uncategorized'))).map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <select 
+            value={severityFilter} 
+            onChange={(e) => setSeverityFilter(e.target.value)}
+            className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2"
+          >
+            <option value="ALL">All Severities</option>
+            <option value="CRITICAL">Critical Only</option>
+            <option value="HIGH">High Only</option>
+            <option value="MEDIUM">Medium Only</option>
+            <option value="LOW">Low Only</option>
+          </select>
+        </div>
       </div>
       <div className="p-4 space-y-4">
         {Object.keys(grouped).length === 0 ? (

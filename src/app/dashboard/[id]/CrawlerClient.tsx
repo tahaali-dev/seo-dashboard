@@ -9,6 +9,8 @@ export default function CrawlerClient({ project, initialPages, issues = [], oldS
   const [pages, setPages] = useState(initialPages)
   const [activeTab, setActiveTab] = useState<'PAGES' | 'ISSUES' | 'DIFF'>('PAGES')
   const [siteFilter, setSiteFilter] = useState<'OLD' | 'NEW'>(project.auditType === 'FRESH' ? 'NEW' : 'OLD')
+  const [pageSearchQuery, setPageSearchQuery] = useState('')
+  const [pageStatusFilter, setPageStatusFilter] = useState('ALL')
   const [isParsing, setIsParsing] = useState(false)
   const [isCrawling, setIsCrawling] = useState(false)
   const [isAuditing, setIsAuditing] = useState(false)
@@ -228,10 +230,31 @@ export default function CrawlerClient({ project, initialPages, issues = [], oldS
           </div>
         </div>
         
-        {activeTab === 'PAGES' && project.auditType === 'MIGRATION' && (
-          <div className="flex items-center space-x-2 bg-slate-900 p-1 rounded-full border border-slate-700">
-            <button onClick={() => setSiteFilter('OLD')} className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${siteFilter === 'OLD' ? 'bg-slate-700 text-indigo-300' : 'text-slate-400 hover:text-white'}`}>OLD SITE</button>
-            <button onClick={() => setSiteFilter('NEW')} className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${siteFilter === 'NEW' ? 'bg-slate-700 text-emerald-300' : 'text-slate-400 hover:text-white'}`}>NEW SITE</button>
+        {activeTab === 'PAGES' && (
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <input 
+              type="text" 
+              placeholder="Search URLs..."
+              value={pageSearchQuery}
+              onChange={(e) => setPageSearchQuery(e.target.value)}
+              className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 w-full sm:w-48"
+            />
+            <select 
+              value={pageStatusFilter} 
+              onChange={(e) => setPageStatusFilter(e.target.value)}
+              className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="SUCCESS">Success Only</option>
+              <option value="ERROR">Error Only</option>
+              <option value="PENDING">Pending Only</option>
+            </select>
+            {project.auditType === 'MIGRATION' && (
+              <div className="flex items-center space-x-2 bg-slate-900 p-1 rounded-full border border-slate-700">
+                <button onClick={() => setSiteFilter('OLD')} className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${siteFilter === 'OLD' ? 'bg-slate-700 text-indigo-300' : 'text-slate-400 hover:text-white'}`}>OLD SITE</button>
+                <button onClick={() => setSiteFilter('NEW')} className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${siteFilter === 'NEW' ? 'bg-slate-700 text-emerald-300' : 'text-slate-400 hover:text-white'}`}>NEW SITE</button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -243,7 +266,12 @@ export default function CrawlerClient({ project, initialPages, issues = [], oldS
         )}
         
         {activeTab === 'PAGES' && (() => {
-          const filteredPages = pages.filter(p => p.siteType === siteFilter)
+          const filteredPages = pages.filter(p => {
+            if (p.siteType !== siteFilter) return false
+            if (pageStatusFilter !== 'ALL' && p.crawlStatus !== pageStatusFilter) return false
+            if (pageSearchQuery && !p.url.toLowerCase().includes(pageSearchQuery.toLowerCase())) return false
+            return true
+          })
           
           const grouped: Record<string, typeof pages> = {}
           filteredPages.forEach(page => {
