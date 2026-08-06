@@ -7,7 +7,7 @@ import IssuesTable from './IssuesTable'
 
 export default function CrawlerClient({ project, initialPages, issues = [], scores }: { project: any, initialPages: any[], issues?: any[], scores?: any }) {
   const [pages, setPages] = useState(initialPages)
-  const [activeTab, setActiveTab] = useState<'PAGES' | 'ISSUES'>('PAGES')
+  const [activeTab, setActiveTab] = useState<'PAGES' | 'ISSUES' | 'DIFF'>('PAGES')
   const [siteFilter, setSiteFilter] = useState<'ALL' | 'OLD' | 'NEW'>('ALL')
   const [isParsing, setIsParsing] = useState(false)
   const [isCrawling, setIsCrawling] = useState(false)
@@ -174,6 +174,12 @@ export default function CrawlerClient({ project, initialPages, issues = [], scor
           >
             Crawled Pages ({pages.length})
           </button>
+          <button
+            onClick={() => setActiveTab('DIFF')}
+            className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'DIFF' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+          >
+            Migration Diff
+          </button>
         </div>
 
         {activeTab === 'PAGES' && (
@@ -250,6 +256,47 @@ export default function CrawlerClient({ project, initialPages, issues = [], scor
                 Showing 20 of {pages.length} pages
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'DIFF' && (
+          <div className="overflow-x-auto bg-slate-800/30 rounded-xl border border-slate-700">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-800/50 text-slate-400 border-b border-slate-700">
+                <tr>
+                  <th className="px-4 py-3">Pathname</th>
+                  <th className="px-4 py-3">Old URL</th>
+                  <th className="px-4 py-3">New URL</th>
+                  <th className="px-4 py-3">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {oldPages.map(oldPage => {
+                  let path = ''
+                  try { path = new URL(oldPage.url).pathname } catch(e) {}
+                  
+                  // Find matching new page
+                  const newPage = newPages.find(p => {
+                    try { return new URL(p.url).pathname === path } catch(e) { return false }
+                  })
+
+                  if (!newPage) return null // Only show mapped pairs for now
+
+                  return (
+                    <tr key={oldPage.id} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="px-4 py-3 text-slate-300 font-medium">{path}</td>
+                      <td className="px-4 py-3 text-slate-400 text-xs truncate max-w-[200px]">{oldPage.url}</td>
+                      <td className="px-4 py-3 text-slate-400 text-xs truncate max-w-[200px]">{newPage.url}</td>
+                      <td className="px-4 py-3">
+                        <Link href={`/dashboard/${project.id}/diff/${oldPage.id}/${newPage.id}`} className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded transition-colors shadow-sm">
+                          Compare
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
