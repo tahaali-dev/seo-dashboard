@@ -1,9 +1,5 @@
-import { PrismaClient } from '@prisma/client'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import { prisma } from '@/lib/prisma'
 import CrawlerClient from './CrawlerClient'
-
-const adapter = new PrismaBetterSqlite3({ url: 'file:./dev.db' })
-const prisma = new PrismaClient({ adapter })
 
 export default async function DashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

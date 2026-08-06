@@ -1,11 +1,7 @@
 'use server'
 
-import { PrismaClient } from '@prisma/client'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
-
-const adapter = new PrismaBetterSqlite3({ url: 'file:./dev.db' })
-const prisma = new PrismaClient({ adapter })
 
 export async function createProject(formData: FormData) {
   const name = formData.get('name') as string
