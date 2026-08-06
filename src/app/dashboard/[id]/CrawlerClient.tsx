@@ -15,6 +15,7 @@ export default function CrawlerClient({ project, initialPages, issues = [], oldS
   const [crawlProgress, setCrawlProgress] = useState(0)
   const [expandedCategories, setExpandedCategories] = useState<string[]>([])
   const [analyticsSite, setAnalyticsSite] = useState<'OLD' | 'NEW'>('NEW')
+  const [recrawlingPageId, setRecrawlingPageId] = useState<string | null>(null)
 
   const toggleCategory = (cat: string) => {
     setExpandedCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])
@@ -37,15 +38,36 @@ export default function CrawlerClient({ project, initialPages, issues = [], oldS
     setIsParsing(false)
   }
 
-  const handleStartCrawl = async () => {
+  const handleRecrawlPage = async (pageId: string) => {
+    setRecrawlingPageId(pageId)
+    try {
+      const res = await fetch('/api/crawl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pageId })
+      })
+      const data = await res.json()
+      setPages(prev => prev.map(p => 
+        p.id === pageId 
+          ? { ...p, crawlStatus: data.success ? 'SUCCESS' : 'ERROR', seoScore: data.seoScore || null } 
+          : p
+      ))
+    } catch (err) {
+      console.error(err)
+      setPages(prev => prev.map(p => p.id === pageId ? { ...p, crawlStatus: 'ERROR' } : p))
+    }
+    setRecrawlingPageId(null)
+  }
+
+  const handleStartCrawl = async (recrawlAll = false) => {
     setIsCrawling(true)
-    const pendingPages = pages.filter(p => p.crawlStatus === 'PENDING')
+    const targetPages = recrawlAll ? pages : pages.filter(p => p.crawlStatus === 'PENDING')
     
     let completed = 0
     const CONCURRENCY = 5
     const pool = new Set<Promise<any>>()
 
-    for (const page of pendingPages) {
+    for (const page of targetPages) {
       const promise = fetch('/api/crawl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -65,7 +87,7 @@ export default function CrawlerClient({ project, initialPages, issues = [], oldS
       })
       .finally(() => {
         completed++
-        setCrawlProgress((completed / pendingPages.length) * 100)
+        setCrawlProgress((completed / targetPages.length) * 100)
         pool.delete(promise)
       })
 
@@ -162,13 +184,27 @@ export default function CrawlerClient({ project, initialPages, issues = [], oldS
             {isParsing ? 'Discovering...' : '1. Discover URLs'}
           </button>
           
-          <button 
-            onClick={handleStartCrawl}
-            disabled={isCrawling || pendingCount === 0}
-            className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
-          >
-            {isCrawling ? `Crawling (${Math.round(crawlProgress)}%)` : `2. Crawl (${pendingCount})`}
-          </button>
+          {pendingCount > 0 ? (
+            <button 
+              onClick={() => handleStartCrawl(false)}
+              disabled={isCrawling}
+              className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
+            >
+              {isCrawling ? `Crawling (${Math.round(crawlProgress)}%)` : `2. Crawl (${pendingCount})`}
+            </button>
+          ) : (
+            <button 
+              onClick={() => {
+                if (confirm('Are you sure you want to recrawl all pages? This may take a while.')) {
+                  handleStartCrawl(true)
+                }
+              }}
+              disabled={isCrawling || pages.length === 0}
+              className="bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
+            >
+              {isCrawling ? `Recrawling (${Math.round(crawlProgress)}%)` : `Recrawl All (${pages.length})`}
+            </button>
+          )}
 
           <button 
             onClick={handleRunAudit}
@@ -271,11 +307,20 @@ export default function CrawlerClient({ project, initialPages, issues = [], oldS
                                   </span>
                                 </td>
                                 <td className="px-4 py-3 text-right">
-                                  {page.crawlStatus === 'SUCCESS' && (
-                                    <Link href={`/dashboard/${project.id}/page/${page.id}`} className="text-sm text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 hover:border-indigo-400 px-3 py-1.5 rounded transition-colors inline-block">
-                                      View Report
-                                    </Link>
-                                  )}
+                                  <div className="flex items-center justify-end space-x-2">
+                                    <button 
+                                      onClick={() => handleRecrawlPage(page.id)}
+                                      disabled={recrawlingPageId === page.id}
+                                      className="text-xs text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1.5 rounded transition-colors disabled:opacity-50 flex items-center gap-1"
+                                    >
+                                      {recrawlingPageId === page.id ? '...' : 'Recrawl'}
+                                    </button>
+                                    {page.crawlStatus === 'SUCCESS' && (
+                                      <Link href={`/dashboard/${project.id}/page/${page.id}`} className="text-sm text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 hover:border-indigo-400 px-3 py-1.5 rounded transition-colors inline-block">
+                                        View
+                                      </Link>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             ))}
