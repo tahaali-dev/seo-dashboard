@@ -73,9 +73,16 @@ export async function POST(req: Request) {
       })
 
       // Extract Images
+      const missingAltSrcs: string[] = []
+      $('img:not([alt]), img[alt=""]').each((_, el) => {
+        const src = $(el).attr('src')
+        if (src) missingAltSrcs.push(src)
+      })
+
       const images = {
         total: $('img').length,
-        missingAlt: $('img:not([alt]), img[alt=""]').length
+        missingAlt: missingAltSrcs.length,
+        missingAltSrcs
       }
 
       // Generate some dummy SEO score (Will be completely replaced by Audit engine later)
