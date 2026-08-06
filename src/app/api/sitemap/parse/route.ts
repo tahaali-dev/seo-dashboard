@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
-import Database from 'better-sqlite3'
 import * as cheerio from 'cheerio'
 
-const connection = new Database('dev.db')
-const adapter = new PrismaBetterSqlite3(connection)
+const adapter = new PrismaBetterSqlite3({ url: 'file:./dev.db' })
 const prisma = new PrismaClient({ adapter })
 
 export async function POST(req: Request) {
@@ -24,9 +22,20 @@ export async function POST(req: Request) {
         const text = await res.text()
         const $ = cheerio.load(text, { xmlMode: true })
         
+        const existingPages = await prisma.page.findMany({
+          where: { projectId: project.id, siteType },
+          select: { url: true }
+        })
+        const existingUrls = new Set(existingPages.map(p => p.url))
+
         const urls: string[] = []
         $('loc').each((_, el) => {
-          urls.push($(el).text().trim())
+          const u = $(el).text().trim()
+          if (!existingUrls.has(u)) {
+            urls.push(u)
+            // also add to set to handle duplicates within the sitemap itself
+            existingUrls.add(u)
+          }
         })
 
         const pages = urls.map(u => ({
@@ -37,8 +46,7 @@ export async function POST(req: Request) {
 
         if (pages.length > 0) {
             await prisma.page.createMany({
-                data: pages,
-                skipDuplicates: true
+                data: pages
             })
         }
         return urls.length

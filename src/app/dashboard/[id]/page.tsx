@@ -1,15 +1,14 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
-import Database from 'better-sqlite3'
 import CrawlerClient from './CrawlerClient'
 
-const connection = new Database('dev.db')
-const adapter = new PrismaBetterSqlite3(connection)
+const adapter = new PrismaBetterSqlite3({ url: 'file:./dev.db' })
 const prisma = new PrismaClient({ adapter })
 
-export default async function DashboardPage({ params }: { params: { id: string } }) {
+export default async function DashboardPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const project = await prisma.project.findUnique({ 
-    where: { id: params.id },
+    where: { id },
     include: { pages: true }
   })
 
