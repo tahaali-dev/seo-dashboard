@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  oldWebsite  String
+  newWebsite  String
+  oldSitemap  String?
+  newSitemap  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  pages       Page[]
+  issues      Issue[]
+  reports     Report[]
+  scans       Scan[]
+}
+
+model Page {
+  id                String   @id @default(cuid())
+  projectId         String
+  url               String
+  pageType          String?  // Static, CMS
+  crawlStatus       String   @default("PENDING") // PENDING, SUCCESS, ERROR
+  seoScore          Int?
+  migrationProgress Int?
+  
+  // Stored as JSON strings
+  metadata          String?
+  headings          String?
+  schema            String?
+  images            String?
+  links             String?
+  checklistProgress String?
+
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues            Issue[]
+}
+
+model Issue {
+  id          String   @id @default(cuid())
+  pageId      String?
+  projectId   String
+  category    String
+  severity    String   // CRITICAL, HIGH, MEDIUM, LOW, INFO
+  title       String
+  description String?
+  solution    String?
+  status      String   @default("OPEN") // OPEN, RESOLVED, IGNORED
+  assignedTo  String?
+  completedAt DateTime?
+
+  page        Page?    @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  projectId   String
+  reportType  String
+  downloadUrl String?
+  generatedAt DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Scan {
+  id          String   @id @default(cuid())
+  projectId   String
+  scanType    String
+  status      String   @default("RUNNING") // RUNNING, COMPLETED, FAILED
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
