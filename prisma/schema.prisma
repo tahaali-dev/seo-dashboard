@@ -26,6 +26,7 @@ model Page {
   id                String   @id @default(cuid())
   projectId         String
   url               String
+  siteType          String   // 'OLD' or 'NEW'
   pageType          String?  // Static, CMS
   crawlStatus       String   @default("PENDING") // PENDING, SUCCESS, ERROR
   seoScore          Int?
