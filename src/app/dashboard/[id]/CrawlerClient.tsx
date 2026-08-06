@@ -6,6 +6,7 @@ export default function CrawlerClient({ project, initialPages }: { project: any,
   const [pages, setPages] = useState(initialPages)
   const [isParsing, setIsParsing] = useState(false)
   const [isCrawling, setIsCrawling] = useState(false)
+  const [isAuditing, setIsAuditing] = useState(false)
   const [crawlProgress, setCrawlProgress] = useState(0)
 
   const handleParseSitemaps = async () => {
@@ -69,6 +70,27 @@ export default function CrawlerClient({ project, initialPages }: { project: any,
     setIsCrawling(false)
   }
 
+  const handleRunAudit = async () => {
+    setIsAuditing(true)
+    try {
+      const res = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: project.id })
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert(`SEO Audit Complete! Generated ${data.count} issues.`)
+      } else {
+        alert(`Audit failed: ${data.error}`)
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Audit request failed.')
+    }
+    setIsAuditing(false)
+  }
+
   const pendingCount = pages.filter(p => p.crawlStatus === 'PENDING').length
   const successCount = pages.filter(p => p.crawlStatus === 'SUCCESS').length
   const oldPages = pages.filter(p => p.siteType === 'OLD')
@@ -109,6 +131,14 @@ export default function CrawlerClient({ project, initialPages }: { project: any,
             className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-6 py-2 rounded-lg font-medium transition-colors"
           >
             {isCrawling ? `Crawling (${Math.round(crawlProgress)}%)` : `2. Crawl Pending Pages (${pendingCount})`}
+          </button>
+
+          <button 
+            onClick={handleRunAudit}
+            disabled={isAuditing || isCrawling || isParsing}
+            className="bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+          >
+            {isAuditing ? 'Generating Issues...' : '3. Run SEO Audit'}
           </button>
         </div>
 
