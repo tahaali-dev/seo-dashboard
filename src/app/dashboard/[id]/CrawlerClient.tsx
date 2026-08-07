@@ -244,7 +244,7 @@ export default function CrawlerClient({
       const res = await fetch(`/api/project/${project.id}/share`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isShared: true, password: sharePassword }),
+        body: JSON.stringify({ isShared: true, password: sharePassword, shareConfig }),
       });
       if (res.ok) {
         alert("Project is now shared! You can send the link to your client.");
@@ -503,15 +503,67 @@ export default function CrawlerClient({
 
               <div>
                 <label className="block text-sm font-semibold text-slate-300 mb-2">
-                  {isShared ? "Update Password" : "Set Password"}
+                  {isShared ? "Update Password (leave blank to keep current)" : "Set Password"}
                 </label>
                 <input
                   type="text"
                   value={sharePassword}
                   onChange={(e) => setSharePassword(e.target.value)}
-                  placeholder="Enter a secure password..."
-                  className="w-full bg-slate-950/50 border border-slate-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-slate-600"
+                  placeholder={isShared ? "Leave blank to keep current password..." : "Enter a secure password..."}
+                  className="w-full bg-slate-950/50 border border-slate-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-slate-600 mb-6"
                 />
+
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-slate-300 border-b border-slate-800 pb-2">Filter Shared Data</h4>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-2">Categories to Share (leave empty for all)</label>
+                    <div className="flex flex-wrap gap-2">
+                      {["Meta data", "Page structure", "Server", "Page quality", "Links", "External factors"].map(cat => (
+                        <button
+                          key={cat}
+                          onClick={() => setShareConfig(prev => ({
+                            ...prev,
+                            categories: prev.categories?.includes(cat) 
+                              ? prev.categories.filter((c: string) => c !== cat) 
+                              : [...(prev.categories || []), cat]
+                          }))}
+                          className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                            shareConfig.categories?.includes(cat) 
+                              ? "bg-indigo-500/20 border-indigo-500/50 text-indigo-300" 
+                              : "bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200"
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-2">Severities to Share (leave empty for all)</label>
+                    <div className="flex flex-wrap gap-2">
+                      {["CRITICAL", "HIGH", "MEDIUM", "LOW"].map(sev => (
+                        <button
+                          key={sev}
+                          onClick={() => setShareConfig(prev => ({
+                            ...prev,
+                            severities: prev.severities?.includes(sev) 
+                              ? prev.severities.filter((s: string) => s !== sev) 
+                              : [...(prev.severities || []), sev]
+                          }))}
+                          className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                            shareConfig.severities?.includes(sev) 
+                              ? "bg-indigo-500/20 border-indigo-500/50 text-indigo-300" 
+                              : "bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200"
+                          }`}
+                        >
+                          {sev}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -534,10 +586,10 @@ export default function CrawlerClient({
                 </button>
                 <button
                   onClick={handleShareSubmit}
-                  disabled={isSharing || !sharePassword}
+                  disabled={isSharing || (!isShared && !sharePassword)}
                   className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold transition-all shadow-md shadow-indigo-600/20"
                 >
-                  {isSharing ? "Saving..." : isShared ? "Update Password" : "Share Project"}
+                  {isSharing ? "Saving..." : isShared ? "Update Share Settings" : "Share Project"}
                 </button>
               </div>
             </div>

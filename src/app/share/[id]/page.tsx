@@ -61,6 +61,29 @@ export default async function SharePage({ params }: { params: Promise<{ id: stri
   const oldScores = computeScores("OLD", oldN)
   const newScores = computeScores("NEW", newN)
 
+  let shareConfig: any = { categories: [], severities: [] };
+  if (project.shareConfig) {
+    try {
+      shareConfig = JSON.parse(project.shareConfig);
+    } catch (e) {}
+  }
+
+  let filteredIssues = project.issues;
+  if (shareConfig.categories && shareConfig.categories.length > 0) {
+    filteredIssues = filteredIssues.filter((i: any) => shareConfig.categories.includes(i.category));
+  }
+  if (shareConfig.severities && shareConfig.severities.length > 0) {
+    filteredIssues = filteredIssues.filter((i: any) => shareConfig.severities.includes(i.severity));
+  }
+
+  let filteredPages = project.pages;
+  const hasFilters = (shareConfig.categories?.length > 0) || (shareConfig.severities?.length > 0);
+  
+  if (hasFilters) {
+    const pageIdsWithIssues = new Set(filteredIssues.map((i: any) => i.pageId));
+    filteredPages = filteredPages.filter((p: any) => pageIdsWithIssues.has(p.id));
+  }
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-200 p-8 font-sans">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -78,8 +101,8 @@ export default async function SharePage({ params }: { params: Promise<{ id: stri
 
         <ShareClient
           project={project}
-          pages={project.pages}
-          issues={project.issues}
+          pages={filteredPages}
+          issues={filteredIssues}
           oldScores={oldScores}
           newScores={newScores}
         />
