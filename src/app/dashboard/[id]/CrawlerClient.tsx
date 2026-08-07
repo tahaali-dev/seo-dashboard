@@ -25,6 +25,18 @@ export default function CrawlerClient({
   const [isAutoRunning, setIsAutoRunning] = useState(false);
   const [autoRunStep, setAutoRunStep] = useState<"IDLE" | "DISCOVER" | "CRAWL" | "AUDIT" | "COMPLETE">("IDLE");
 
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<"PDF" | "CSV">("PDF");
+  const [exportSections, setExportSections] = useState({
+    summary: true,
+    issues: true,
+    migration: project.auditType === "MIGRATION",
+    links: true,
+    images: true,
+    missingMeta: false,
+    brokenPages: false,
+  });
+
   const [activeTab, setActiveTab] = useState<"PAGES" | "ISSUES" | "DIFF">("PAGES");
   const [siteFilter, setSiteFilter] = useState<"OLD" | "NEW">(
     project.auditType === "FRESH" ? "NEW" : "OLD",
@@ -225,6 +237,151 @@ export default function CrawlerClient({
     }, 1500);
   };
 
+  const triggerCsvExport = (sections: string[]) => {
+    let csvContent = "";
+
+    const escapeCsv = (str: string) => {
+      if (str === null || str === undefined) return "";
+      const s = String(str).replace(/"/g, '""');
+      return s.includes(",") || s.includes("\n") || s.includes('"') ? `"${s}"` : s;
+    };
+
+    if (sections.includes("summary")) {
+      csvContent += "=== EXECUTIVE SUMMARY ===\n";
+      csvContent += `Project Name,${escapeCsv(project.name)}\n`;
+      csvContent += `Audit Type,${project.auditType}\n`;
+      csvContent += `Created At,${new Date(project.createdAt).toLocaleDateString()}\n`;
+      csvContent += `Total Pages,${pages.length}\n`;
+      csvContent += `Total Open Issues,${issues.length}\n`;
+      csvContent += `Old Site Score,${oldScores.overall}%\n`;
+      if (project.auditType === "MIGRATION") {
+        csvContent += `New Site Score,${newScores.overall}%\n`;
+      }
+      csvContent += "\n";
+    }
+
+    if (sections.includes("issues")) {
+      csvContent += "=== DETECTED SEO ISSUES ===\n";
+      csvContent += "Severity,Title,Category,Description,Page URL\n";
+      issues.forEach((issue) => {
+        csvContent += `${escapeCsv(issue.severity)},${escapeCsv(issue.title)},${escapeCsv(issue.category)},${escapeCsv(issue.description)},${escapeCsv(issue.page?.url || "")}\n`;
+      });
+      csvContent += "\n";
+    }
+
+    if (sections.includes("migration") && project.auditType === "MIGRATION") {
+      csvContent += "=== MIGRATION PATH MAPPING ===\n";
+      csvContent += "Pathname,Old URL,New URL,Status\n";
+      const oldPages = pages.filter((p) => p.siteType === "OLD");
+      const newPages = pages.filter((p) => p.siteType === "NEW");
+      oldPages.forEach((oldPage) => {
+        let path = "";
+        try { path = new URL(oldPage.url).pathname; } catch (e) {}
+        const newPage = newPages.find((p) => {
+          try { return new URL(p.url).pathname === path; } catch (e) { return false; }
+        });
+        const status = newPage ? "Mapped" : "Missing 301 Redirect";
+        csvContent += `${escapeCsv(path)},${escapeCsv(oldPage.url)},${escapeCsv(newPage?.url || "")},${status}\n`;
+      });
+      csvContent += "\n";
+    }
+
+    if (sections.includes("links")) {
+      csvContent += "=== OUTBOUND & BROKEN LINKS AUDIT ===\n";
+      csvContent += "Page URL,Destination URL,Link Type,HTTP Status\n";
+      pages.forEach((page) => {
+        let brokenLinksList = [];
+        try { brokenLinksList = page.brokenLinks ? JSON.parse(page.brokenLinks) : []; } catch (e) {}
+        brokenLinksList.forEach((bl: any) => {
+          csvContent += `${escapeCsv(page.url)},${escapeCsv(bl.url)},External,${bl.status}\n`;
+        });
+      });
+      csvContent += "\n";
+    }
+
+    if (sections.includes("images")) {
+      csvContent += "=== IMAGE OPTIMIZATION AUDIT ===\n";
+      csvContent += "Page URL,Image Source URL,Issue\n";
+      pages.forEach((page) => {
+        let imageDetails = { missingAltSrcs: [] };
+        try { imageDetails = page.images ? JSON.parse(page.images) : { missingAltSrcs: [] }; } catch (e) {}
+        const missingAlt = imageDetails.missingAltSrcs || [];
+        missingAlt.forEach((src: string) => {
+          csvContent += `${escapeCsv(page.url)},${escapeCsv(src)},Missing Alt Text\n`;
+        });
+      });
+      csvContent += "\n";
+    }
+
+    if (sections.includes("missingMeta")) {
+      csvContent += "=== PAGES WITH MISSING METADATA ===\n";
+      csvContent += "Page URL,Site Type,Missing Title,Missing Description,Missing Canonical\n";
+      pages.forEach((page) => {
+        let metadata = { title: "", description: "", canonical: "" };
+        try { if (page.metadata) metadata = JSON.parse(page.metadata); } catch (e) {}
+        const titleMissing = !metadata.title || metadata.title.trim() === "";
+        const descMissing = !metadata.description || metadata.description.trim() === "";
+        const canonicalMissing = !metadata.canonical || metadata.canonical.trim() === "";
+        
+        if (titleMissing || descMissing || canonicalMissing) {
+          csvContent += `${escapeCsv(page.url)},${escapeCsv(page.siteType)},${titleMissing ? "Yes" : "No"},${descMissing ? "Yes" : "No"},${canonicalMissing ? "Yes" : "No"}\n`;
+        }
+      });
+      csvContent += "\n";
+    }
+
+    if (sections.includes("brokenPages")) {
+      csvContent += "=== PAGES WITH 404 / CRAWL ERRORS ===\n";
+      csvContent += "Page URL,Site Type,Crawl Status,Error Details\n";
+      pages.forEach((page) => {
+        if (page.crawlStatus === "ERROR") {
+          let errorDetails = "Crawl failed";
+          try {
+            if (page.metadata) {
+              const meta = JSON.parse(page.metadata);
+              if (meta.error) errorDetails = meta.error;
+            }
+          } catch (e) {}
+          csvContent += `${escapeCsv(page.url)},${escapeCsv(page.siteType)},${escapeCsv(page.crawlStatus)},${escapeCsv(errorDetails)}\n`;
+        }
+      });
+      csvContent += "\n";
+    }
+
+    // Trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `${project.name.toLowerCase().replace(/\s+/g, "_")}_seo_report.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setIsExportOpen(false);
+  };
+
+  const handleExportSubmit = () => {
+    // Collect active sections
+    const activeSections = Object.entries(exportSections)
+      .filter(([_, enabled]) => enabled)
+      .map(([name]) => name);
+
+    if (activeSections.length === 0) {
+      alert("Please select at least one section to export.");
+      return;
+    }
+
+    if (exportFormat === "PDF") {
+      // Open in a new tab which triggers printing automatically
+      const sectionsParam = activeSections.join(",");
+      window.open(`/dashboard/${project.id}/export?sections=${sectionsParam}`, "_blank");
+      setIsExportOpen(false);
+    } else {
+      // Export as CSV
+      triggerCsvExport(activeSections);
+    }
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -395,6 +552,176 @@ export default function CrawlerClient({
           </div>
         </div>
       )}
+      {isExportOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-800 mb-6">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export SEO Report
+              </h3>
+              <button
+                onClick={() => setIsExportOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Section Selection Checklist */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-300 mb-3">Include Report Sections</h4>
+                <div className="space-y-3 bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={exportSections.summary}
+                      onChange={(e) => setExportSections(prev => ({ ...prev, summary: e.target.checked }))}
+                      className="mt-1 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-white">Executive Score Summary</span>
+                      <p className="text-xs text-slate-400 font-normal">Scorecard, project overview, and category grades.</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={exportSections.issues}
+                      onChange={(e) => setExportSections(prev => ({ ...prev, issues: e.target.checked }))}
+                      className="mt-1 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-white">SEO Issues Log</span>
+                      <p className="text-xs text-slate-400 font-normal">Prioritized checklist of issues by severity and page.</p>
+                    </div>
+                  </label>
+
+                  {project.auditType === "MIGRATION" && (
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={exportSections.migration}
+                        onChange={(e) => setExportSections(prev => ({ ...prev, migration: e.target.checked }))}
+                        className="mt-1 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+                      />
+                      <div>
+                        <span className="text-sm font-medium text-white">Migration Path Diff</span>
+                        <p className="text-xs text-slate-400 font-normal">Comparison matching old URLs to new URLs.</p>
+                      </div>
+                    </label>
+                  )}
+
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={exportSections.links}
+                      onChange={(e) => setExportSections(prev => ({ ...prev, links: e.target.checked }))}
+                      className="mt-1 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-white">Outbound & Broken Links Audit</span>
+                      <p className="text-xs text-slate-400 font-normal">Registry of external, broken, and insecure links.</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={exportSections.images}
+                      onChange={(e) => setExportSections(prev => ({ ...prev, images: e.target.checked }))}
+                      className="mt-1 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-white">Image Optimization Audit</span>
+                      <p className="text-xs text-slate-400 font-normal">Checklist of images missing alt descriptions.</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={exportSections.missingMeta}
+                      onChange={(e) => setExportSections(prev => ({ ...prev, missingMeta: e.target.checked }))}
+                      className="mt-1 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-white">Pages with Missing Meta Data</span>
+                      <p className="text-xs text-slate-400 font-normal">Registry of pages missing titles, descriptions, or canonical tags.</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={exportSections.brokenPages}
+                      onChange={(e) => setExportSections(prev => ({ ...prev, brokenPages: e.target.checked }))}
+                      className="mt-1 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-white">Pages with 404 / Crawl Errors</span>
+                      <p className="text-xs text-slate-400 font-normal">Registry of pages on the website that returned 404 or failed to crawl.</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Format Selection */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-300 mb-3">Choose Export Format</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setExportFormat("PDF")}
+                    className={`p-3 rounded-xl border text-center transition-all ${
+                      exportFormat === "PDF" 
+                        ? "bg-indigo-500/10 border-indigo-500 ring-1 ring-indigo-500 text-white font-medium" 
+                        : "bg-slate-950/30 border-slate-800 text-slate-400 hover:border-slate-700"
+                    }`}
+                  >
+                    <span className="block text-sm">PDF / Print Report</span>
+                    <span className="text-[10px] text-slate-400 block mt-0.5 font-normal">Styled & readable report layout</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setExportFormat("CSV")}
+                    className={`p-3 rounded-xl border text-center transition-all ${
+                      exportFormat === "CSV" 
+                        ? "bg-indigo-500/10 border-indigo-500 ring-1 ring-indigo-500 text-white font-medium" 
+                        : "bg-slate-950/30 border-slate-800 text-slate-400 hover:border-slate-700"
+                    }`}
+                  >
+                    <span className="block text-sm">CSV Spreadsheet</span>
+                    <span className="text-[10px] text-slate-400 block mt-0.5 font-normal">Structured raw data for Excel</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-4 border-t border-slate-800 flex justify-end gap-3">
+              <button
+                onClick={() => setIsExportOpen(false)}
+                className="px-4 py-2.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-300 text-sm font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleExportSubmit}
+                className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-all shadow-md shadow-indigo-600/20"
+              >
+                Generate Export
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Top Section: Dashboard Cards & Widgets */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 flex flex-col gap-4">
@@ -513,6 +840,17 @@ export default function CrawlerClient({
             className="bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
           >
             {isAuditing ? "Generating..." : "3. Run Audit"}
+          </button>
+
+          <button
+            onClick={() => setIsExportOpen(true)}
+            disabled={isAuditing || isCrawling || isParsing || pages.length === 0}
+            className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2 border border-slate-600"
+          >
+            <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Export Report
           </button>
         </div>
       </div>

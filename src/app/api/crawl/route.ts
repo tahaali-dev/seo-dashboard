@@ -158,7 +158,10 @@ export async function POST(req: Request) {
       console.error(`Crawl failed for ${page.url}:`, crawlError)
       await prisma.page.update({
         where: { id: page.id },
-        data: { crawlStatus: 'ERROR' }
+        data: { 
+          crawlStatus: 'ERROR',
+          metadata: JSON.stringify({ error: crawlError.message })
+        }
       })
       return NextResponse.json({ error: crawlError.message }, { status: 500 })
     }
