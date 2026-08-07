@@ -185,7 +185,18 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ success: true, count: issuesToCreate.length })
+    const issues = await prisma.issue.findMany({
+      where: { projectId },
+      include: {
+        page: {
+          select: {
+            url: true,
+            siteType: true,
+          },
+        },
+      },
+    })
+    return NextResponse.json({ success: true, count: issuesToCreate.length, issues })
   } catch (error: any) {
     console.error('Audit failed:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

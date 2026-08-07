@@ -45,6 +45,8 @@ model Page {
 
   project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   issues            Issue[]
+
+  @@index([projectId])
 }
 
 model Issue {
@@ -62,6 +64,9 @@ model Issue {
 
   page        Page?    @relation(fields: [pageId], references: [id], onDelete: SetNull)
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([pageId])
 }
 
 model Report {
@@ -72,6 +77,8 @@ model Report {
   generatedAt DateTime @default(now())
 
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }
 
 model Scan {
@@ -83,4 +90,6 @@ model Scan {
   completedAt DateTime?
 
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }

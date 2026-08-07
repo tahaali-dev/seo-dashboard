@@ -123,41 +123,7 @@ export default function NewProject() {
             </div>
           </div>
 
-          <div className="border-t border-slate-800 pt-6 mt-6">
-            <h3 className="text-lg font-medium text-slate-300 mb-4">
-              Sitemaps (Optional)
-            </h3>
-            <div
-              className={`grid grid-cols-1 ${auditType === "MIGRATION" ? "md:grid-cols-2" : ""} gap-6`}
-            >
-              {auditType === "MIGRATION" && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">
-                    Old Sitemap URL
-                  </label>
-                  <input
-                    type="url"
-                    name="oldSitemap"
-                    placeholder="https://oldsite.com/sitemap.xml"
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
-                  />
-                </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">
-                  {auditType === "MIGRATION"
-                    ? "New Sitemap URL"
-                    : "Sitemap URL"}
-                </label>
-                <input
-                  type="url"
-                  name="newSitemap"
-                  placeholder="https://newsite.com/sitemap.xml"
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                />
-              </div>
-            </div>
-          </div>
+
 
           <div className="pt-4 flex justify-end">
             <button

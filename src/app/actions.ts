@@ -8,8 +8,8 @@ export async function createProject(formData: FormData) {
   const auditType = formData.get('auditType') as string || 'MIGRATION'
   const oldWebsite = formData.get('oldWebsite') as string
   const newWebsite = formData.get('newWebsite') as string
-  const oldSitemap = formData.get('oldSitemap') as string
-  const newSitemap = formData.get('newSitemap') as string
+  const oldSitemap = oldWebsite ? `${oldWebsite.replace(/\/+$/, '')}/sitemap.xml` : null
+  const newSitemap = newWebsite ? `${newWebsite.replace(/\/+$/, '')}/sitemap.xml` : null
 
   if (!name || !newWebsite) {
     throw new Error('Missing required fields')
@@ -44,7 +44,7 @@ export async function createProject(formData: FormData) {
     }
   })
 
-  redirect(`/dashboard/${project.id}`)
+  redirect(`/dashboard/${project.id}?autostart=true`)
 }
 
 export async function deleteProject(id: string) {

@@ -11,7 +11,19 @@ export default async function DashboardPage({
   const { id } = await params;
   const project = await prisma.project.findUnique({
     where: { id },
-    include: { pages: true, issues: { include: { page: true } } },
+    include: {
+      pages: true,
+      issues: {
+        include: {
+          page: {
+            select: {
+              url: true,
+              siteType: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!project) {
@@ -109,7 +121,7 @@ export default async function DashboardPage({
         <CrawlerClient
           project={project}
           initialPages={project.pages}
-          issues={project.issues}
+          initialIssues={project.issues}
           oldScores={oldScores}
           newScores={newScores}
         />

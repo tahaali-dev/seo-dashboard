@@ -90,13 +90,13 @@ export async function POST(req: Request) {
       const brokenLinks: Array<{ url: string, status: number }> = []
       
       // Ping external links to check for 404s and 301s
-      // We limit to 10 to avoid stalling the entire crawl on large pages
-      const linksToPing = Array.from(uniqueOutboundUrls).slice(0, 10)
+      // We limit to 3 to avoid stalling the entire crawl on large pages
+      const linksToPing = Array.from(uniqueOutboundUrls).slice(0, 3)
       
       await Promise.allSettled(linksToPing.map(async (url) => {
         try {
           const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
+          const timeoutId = setTimeout(() => controller.abort(), 1000) // 1 second timeout
           
           const response = await fetch(url, { 
             method: 'HEAD', 

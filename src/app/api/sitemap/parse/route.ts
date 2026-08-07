@@ -78,7 +78,8 @@ export async function POST(req: Request) {
       newCount = await addFallbackUrl(project.newWebsite, 'NEW')
     }
 
-    return NextResponse.json({ success: true, oldCount, newCount })
+    const pages = await prisma.page.findMany({ where: { projectId } })
+    return NextResponse.json({ success: true, oldCount, newCount, pages })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

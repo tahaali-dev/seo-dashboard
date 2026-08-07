@@ -1,27 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SEOScoreWidget from "./SEOScoreWidget";
 import IssuesTable from "./IssuesTable";
 
 export default function CrawlerClient({
   project,
   initialPages,
-  issues = [],
-  oldScores,
-  newScores,
+  initialIssues = [],
 }: {
   project: any;
   initialPages: any[];
-  issues?: any[];
+  initialIssues?: any[];
   oldScores?: any;
   newScores?: any;
 }) {
+  const router = useRouter();
+  const startedRef = React.useRef(false);
+
   const [pages, setPages] = useState(initialPages);
-  const [activeTab, setActiveTab] = useState<"PAGES" | "ISSUES" | "DIFF">(
-    "PAGES",
-  );
+  const [issues, setIssues] = useState(initialIssues);
+  const [isAutoRunning, setIsAutoRunning] = useState(false);
+  const [autoRunStep, setAutoRunStep] = useState<"IDLE" | "DISCOVER" | "CRAWL" | "AUDIT" | "COMPLETE">("IDLE");
+
+  const [activeTab, setActiveTab] = useState<"PAGES" | "ISSUES" | "DIFF">("PAGES");
   const [siteFilter, setSiteFilter] = useState<"OLD" | "NEW">(
     project.auditType === "FRESH" ? "NEW" : "OLD",
   );
@@ -41,23 +45,31 @@ export default function CrawlerClient({
     );
   };
 
-  const handleParseSitemaps = async () => {
+  const parseSitemaps = async (): Promise<any[]> => {
     setIsParsing(true);
     try {
       const res = await fetch("/api/sitemap/parse", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId: project.id }),
       });
       const data = await res.json();
-      if (data.success) {
-        alert(
-          `Parsed ${data.oldCount} old URLs and ${data.newCount} new URLs! Refresh the page to see them.`,
-        );
+      if (data.success && data.pages) {
+        setPages(data.pages);
+        setIsParsing(false);
+        return data.pages;
       }
     } catch (err) {
-      console.error(err);
+      console.error("Sitemap parse error:", err);
     }
     setIsParsing(false);
+    return [];
+  };
+
+  const handleParseSitemaps = async () => {
+    const newPages = await parseSitemaps();
+    alert(`Parsed sitemaps! Discovered ${newPages.length} URLs. Try crawling next!`);
+    router.refresh();
   };
 
   const handleRecrawlPage = async (pageId: string) => {
@@ -89,17 +101,16 @@ export default function CrawlerClient({
     setRecrawlingPageId(null);
   };
 
-  const handleStartCrawl = async (recrawlAll = false) => {
+  const crawlPages = async (pagesToCrawl: any[]) => {
+    if (pagesToCrawl.length === 0) return;
     setIsCrawling(true);
-    const targetPages = recrawlAll
-      ? pages
-      : pages.filter((p) => p.crawlStatus === "PENDING");
+    setCrawlProgress(0);
 
     let completed = 0;
-    const CONCURRENCY = 5;
+    const CONCURRENCY = 10;
     const pool = new Set<Promise<any>>();
 
-    for (const page of targetPages) {
+    for (const page of pagesToCrawl) {
       const promise = fetch("/api/crawl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -107,7 +118,6 @@ export default function CrawlerClient({
       })
         .then((res) => res.json())
         .then((data) => {
-          // Update local state live as they finish
           setPages((prev) =>
             prev.map((p) =>
               p.id === page.id
@@ -125,7 +135,7 @@ export default function CrawlerClient({
         })
         .finally(() => {
           completed++;
-          setCrawlProgress((completed / targetPages.length) * 100);
+          setCrawlProgress((completed / pagesToCrawl.length) * 100);
           pool.delete(promise);
         });
 
@@ -137,11 +147,19 @@ export default function CrawlerClient({
     }
 
     await Promise.all(pool);
-    alert("Crawling complete! We are now ready to generate Issues.");
     setIsCrawling(false);
   };
 
-  const handleRunAudit = async () => {
+  const handleStartCrawl = async (recrawlAll = false) => {
+    const targetPages = recrawlAll
+      ? pages
+      : pages.filter((p) => p.crawlStatus === "PENDING");
+    await crawlPages(targetPages);
+    alert("Crawling complete! We are now ready to generate Issues.");
+    router.refresh();
+  };
+
+  const runAudit = async (): Promise<any[]> => {
     setIsAuditing(true);
     try {
       const res = await fetch("/api/audit", {
@@ -150,25 +168,233 @@ export default function CrawlerClient({
         body: JSON.stringify({ projectId: project.id }),
       });
       const data = await res.json();
-      if (data.success) {
-        alert(`SEO Audit Complete! Generated ${data.count} issues.`);
-      } else {
-        alert(`Audit failed: ${data.error}`);
+      if (data.success && data.issues) {
+        setIssues(data.issues);
+        setIsAuditing(false);
+        return data.issues;
       }
     } catch (err) {
-      console.error(err);
-      alert("Audit request failed.");
+      console.error("Audit error:", err);
     }
     setIsAuditing(false);
+    return [];
   };
+
+  const handleRunAudit = async () => {
+    const newIssues = await runAudit();
+    alert(`SEO Audit Complete! Generated ${newIssues.length} issues.`);
+    router.refresh();
+  };
+
+  const runAutoWorkflow = async () => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+
+    // Clear query parameter immediately
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("autostart");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+
+    setIsAutoRunning(true);
+    
+    // Step 1: Discover URLs
+    setAutoRunStep("DISCOVER");
+    const discoveredPages = await parseSitemaps();
+    
+    // Step 2: Crawl Pages
+    setAutoRunStep("CRAWL");
+    const pendingPages = discoveredPages.filter(p => p.crawlStatus === "PENDING");
+    if (pendingPages.length > 0) {
+      await crawlPages(pendingPages);
+    }
+    
+    // Step 3: Run Audit
+    setAutoRunStep("AUDIT");
+    await runAudit();
+    
+    // Step 4: Complete
+    setAutoRunStep("COMPLETE");
+    
+    router.refresh();
+    
+    setTimeout(() => {
+      setIsAutoRunning(false);
+      setAutoRunStep("IDLE");
+    }, 1500);
+  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("autostart") === "true") {
+        runAutoWorkflow();
+      }
+    }
+  }, []);
 
   const pendingCount = pages.filter((p) => p.crawlStatus === "PENDING").length;
   const successCount = pages.filter((p) => p.crawlStatus === "SUCCESS").length;
   const oldPages = pages.filter((p) => p.siteType === "OLD");
   const newPages = pages.filter((p) => p.siteType === "NEW");
 
+  const oldN = oldPages.length || 1;
+  const newN = newPages.length || 1;
+
+  const getScoreForCategory = (cat: string, siteType: string, N: number) => {
+    const issuesInCat = issues.filter(
+      (i: any) => i.category === cat && i.page?.siteType === siteType,
+    );
+    const totalProblemPages = new Set(issuesInCat.map((i: any) => i.pageId)).size;
+    return Math.max(0, Math.round((100 * (N - totalProblemPages)) / N));
+  };
+
+  const computeScores = (siteType: string, N: number) => {
+    const categories = {
+      "Meta data": getScoreForCategory("Meta data", siteType, N),
+      "Page structure": getScoreForCategory("Page structure", siteType, N),
+      Server: getScoreForCategory("Server", siteType, N),
+      "Page quality": getScoreForCategory("Page quality", siteType, N),
+      Links: getScoreForCategory("Links", siteType, N),
+      "External factors": getScoreForCategory("External factors", siteType, N),
+    };
+    const overall = Math.round(
+      Object.values(categories).reduce((a, b) => a + b, 0) / 6,
+    );
+    return { categories, overall };
+  };
+
+  const oldScores = computeScores("OLD", oldN);
+  const newScores = computeScores("NEW", newN);
+
   return (
     <div className="space-y-8">
+      {isAutoRunning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-lg bg-slate-900/90 border border-slate-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden flex flex-col items-center">
+            {/* Decorative gradient blur background */}
+            <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            {/* Spinner/Header */}
+            <div className="mb-6 relative flex items-center justify-center">
+              {autoRunStep !== "COMPLETE" ? (
+                <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-spin"></div>
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center animate-bounce">
+                  <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              )}
+            </div>
+
+            <h3 className="text-xl font-bold text-white mb-2 text-center">
+              {autoRunStep === "DISCOVER" && "Discovering Pages"}
+              {autoRunStep === "CRAWL" && "Crawling Site Content"}
+              {autoRunStep === "AUDIT" && "Analyzing SEO Issues"}
+              {autoRunStep === "COMPLETE" && "SEO Audit Complete!"}
+            </h3>
+            <p className="text-sm text-slate-400 text-center mb-8 max-w-sm">
+              {autoRunStep === "DISCOVER" && "Parsing sitemaps and scanning landing pages to locate all URLs..."}
+              {autoRunStep === "CRAWL" && `Crawling and extracting metadata, keywords, and outbound links...`}
+              {autoRunStep === "AUDIT" && "Applying SEO rules, validating outbound links, and calculating scores..."}
+              {autoRunStep === "COMPLETE" && "All steps completed successfully. Preparing your dashboard..."}
+            </p>
+
+            {/* Progress indicators for steps */}
+            <div className="w-full space-y-4">
+              {/* Step 1: Discover */}
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-3">
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                    autoRunStep === "DISCOVER" 
+                      ? "bg-indigo-500 text-white animate-pulse" 
+                      : (autoRunStep === "CRAWL" || autoRunStep === "AUDIT" || autoRunStep === "COMPLETE")
+                        ? "bg-indigo-500/20 text-indigo-400"
+                        : "bg-slate-800 text-slate-500"
+                  }`}>
+                    {(autoRunStep === "CRAWL" || autoRunStep === "AUDIT" || autoRunStep === "COMPLETE") ? (
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : "1"}
+                  </span>
+                  <span className={autoRunStep === "DISCOVER" ? "text-white font-medium" : "text-slate-400"}>
+                    URL Discovery
+                  </span>
+                </div>
+                <span className="text-xs text-slate-500">
+                  {autoRunStep === "DISCOVER" ? "In progress..." : (autoRunStep !== "IDLE" ? "Done" : "Pending")}
+                </span>
+              </div>
+
+              {/* Step 2: Crawl */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-3">
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                      autoRunStep === "CRAWL" 
+                        ? "bg-indigo-500 text-white animate-pulse" 
+                        : (autoRunStep === "AUDIT" || autoRunStep === "COMPLETE")
+                          ? "bg-indigo-500/20 text-indigo-400"
+                          : "bg-slate-800 text-slate-500"
+                    }`}>
+                      {(autoRunStep === "AUDIT" || autoRunStep === "COMPLETE") ? (
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : "2"}
+                    </span>
+                    <span className={autoRunStep === "CRAWL" ? "text-white font-medium" : "text-slate-400"}>
+                      Page Crawling
+                    </span>
+                  </div>
+                  <span className="text-xs text-slate-500">
+                    {autoRunStep === "CRAWL" 
+                      ? `${Math.round(crawlProgress)}%` 
+                      : (autoRunStep === "AUDIT" || autoRunStep === "COMPLETE") ? "Done" : "Pending"}
+                  </span>
+                </div>
+                {autoRunStep === "CRAWL" && (
+                  <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div 
+                      className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300"
+                      style={{ width: `${crawlProgress}%` }}
+                    ></div>
+                  </div>
+                )}
+              </div>
+
+              {/* Step 3: Audit */}
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-3">
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                    autoRunStep === "AUDIT" 
+                      ? "bg-indigo-500 text-white animate-pulse" 
+                      : autoRunStep === "COMPLETE"
+                        ? "bg-indigo-500/20 text-indigo-400"
+                        : "bg-slate-800 text-slate-500"
+                  }`}>
+                    {autoRunStep === "COMPLETE" ? (
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : "3"}
+                  </span>
+                  <span className={autoRunStep === "AUDIT" ? "text-white font-medium" : "text-slate-400"}>
+                    SEO Auditing
+                  </span>
+                </div>
+                <span className="text-xs text-slate-500">
+                  {autoRunStep === "AUDIT" ? "In progress..." : (autoRunStep === "COMPLETE" ? "Done" : "Pending")}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Top Section: Dashboard Cards & Widgets */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 flex flex-col gap-4">
