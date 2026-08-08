@@ -184,9 +184,9 @@ export default function ShareClient({
       </div>
 
       {/* Tabs and Filters */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-slate-800/30 p-4 rounded-xl border border-slate-700 overflow-x-auto">
-        <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-700 shrink-0">
-          <div className="flex items-center space-x-2 whitespace-nowrap">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-slate-800/30 p-4 rounded-xl border border-slate-700">
+        <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-700 overflow-x-auto w-full xl:w-auto xl:shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex items-center space-x-2 whitespace-nowrap min-w-max">
             {project.auditType !== "MIGRATION" && (
               <>
                 <button
@@ -252,7 +252,7 @@ export default function ShareClient({
         </div>
 
         {activeTab !== "ISSUES" && activeTab !== "DIFF" && (
-          <div className="flex flex-col sm:flex-row items-center gap-3 mt-4 xl:mt-0 shrink-0">
+          <div className="flex flex-col sm:flex-row items-center gap-3 mt-4 xl:mt-0 shrink-0 w-full xl:w-auto">
             <input
               type="text"
               placeholder="Search URLs..."
@@ -263,7 +263,7 @@ export default function ShareClient({
             <select
               value={pageStatusFilter}
               onChange={(e) => setPageStatusFilter(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2"
+              className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 w-full sm:w-auto"
             >
               <option value="ALL">All Statuses</option>
               <option value="SUCCESS">Success Only</option>
@@ -275,16 +275,16 @@ export default function ShareClient({
               (activeTab === "MISSING_METADATA" && (!reports.missingMetadata || reports.missingMetadata.siteFilter === "ALL")) ||
               activeTab === "PAGES"
             ) && (
-              <div className="flex items-center space-x-2 bg-slate-900 p-1 rounded-full border border-slate-700">
+              <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-full border border-slate-700 w-full sm:w-auto shrink-0">
                 <button
                   onClick={() => setSiteFilter("OLD")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${siteFilter === "OLD" ? "bg-slate-700 text-indigo-300" : "text-slate-400 hover:text-white"}`}
+                  className={`flex-1 sm:flex-none px-6 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors text-center ${siteFilter === "OLD" ? "bg-slate-700 shadow-sm text-indigo-300" : "text-slate-400 hover:text-white"}`}
                 >
                   OLD SITE
                 </button>
                 <button
                   onClick={() => setSiteFilter("NEW")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${siteFilter === "NEW" ? "bg-slate-700 text-emerald-300" : "text-slate-400 hover:text-white"}`}
+                  className={`flex-1 sm:flex-none px-6 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors text-center ${siteFilter === "NEW" ? "bg-slate-700 shadow-sm text-emerald-300" : "text-slate-400 hover:text-white"}`}
                 >
                   NEW SITE
                 </button>
@@ -401,6 +401,15 @@ export default function ShareClient({
                                   <th className="px-4 py-3">URL</th>
                                   <th className="px-4 py-3">Site</th>
                                   <th className="px-4 py-3">Status</th>
+                                  {activeTab === "MISSING_METADATA" && reports.missingMetadata?.types?.title && (
+                                    <th className="px-4 py-3 text-center">Title</th>
+                                  )}
+                                  {activeTab === "MISSING_METADATA" && reports.missingMetadata?.types?.description && (
+                                    <th className="px-4 py-3 text-center">Description</th>
+                                  )}
+                                  {activeTab === "MISSING_METADATA" && reports.missingMetadata?.types?.canonical && (
+                                    <th className="px-4 py-3 text-center">Canonical</th>
+                                  )}
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-800">
@@ -409,8 +418,22 @@ export default function ShareClient({
                                     key={page.id}
                                     className="hover:bg-slate-800/30 transition-colors"
                                   >
-                                    <td className="px-4 py-3 text-slate-300 truncate max-w-xs">
-                                      {page.url}
+                                    <td className="px-4 py-3 text-slate-300 truncate max-w-xs" title={page.url}>
+                                      <a
+                                        href={page.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="hover:text-indigo-400 hover:underline transition-colors block w-full truncate"
+                                      >
+                                        {(() => {
+                                          try {
+                                            const urlObj = new URL(page.url);
+                                            return urlObj.pathname + urlObj.search;
+                                          } catch (e) {
+                                            return page.url;
+                                          }
+                                        })()}
+                                      </a>
                                     </td>
                                     <td className="px-4 py-3">
                                       <span
@@ -426,6 +449,32 @@ export default function ShareClient({
                                         {page.crawlStatus}
                                       </span>
                                     </td>
+                                    {activeTab === "MISSING_METADATA" && (() => {
+                                      let meta = { title: "", description: "", canonical: "" };
+                                      try { if (page.metadata) meta = JSON.parse(page.metadata); } catch(e) {}
+                                      
+                                      const MissingBadge = () => <span className="text-red-400/80 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">Missing</span>;
+                                      
+                                      return (
+                                        <>
+                                          {reports.missingMetadata?.types?.title && (
+                                            <td className="px-4 py-3 text-center">
+                                              {(!meta.title || meta.title.trim() === "") && <MissingBadge />}
+                                            </td>
+                                          )}
+                                          {reports.missingMetadata?.types?.description && (
+                                            <td className="px-4 py-3 text-center">
+                                              {(!meta.description || meta.description.trim() === "") && <MissingBadge />}
+                                            </td>
+                                          )}
+                                          {reports.missingMetadata?.types?.canonical && (
+                                            <td className="px-4 py-3 text-center">
+                                              {(!meta.canonical || meta.canonical.trim() === "") && <MissingBadge />}
+                                            </td>
+                                          )}
+                                        </>
+                                      );
+                                    })()}
                                   </tr>
                                 ))}
                               </tbody>

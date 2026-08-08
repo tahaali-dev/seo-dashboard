@@ -85,7 +85,7 @@ export default async function SharePage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-200 p-8 font-sans">
+    <div className="min-h-screen bg-slate-900 text-slate-200 p-4 sm:p-8 font-sans">
       <div className="max-w-6xl mx-auto space-y-8">
         <header className="flex justify-between items-end border-b border-slate-800 pb-6 relative">
           <div className="pt-2">
