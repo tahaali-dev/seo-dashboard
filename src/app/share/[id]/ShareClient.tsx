@@ -67,7 +67,7 @@ export default function ShareClient({
     return "ISSUES";
   });
 
-  const [siteFilter, setSiteFilter] = useState<"OLD" | "NEW">(
+  const [siteFilter, setSiteFilter] = useState<"OLD" | "NEW" | "ALL">(
     project.auditType === "FRESH" ? "NEW" : "OLD",
   );
   const [pageSearchQuery, setPageSearchQuery] = useState("");
@@ -301,7 +301,7 @@ export default function ShareClient({
         {["PAGES", "CRAWLED_PAGES", "MISSING_METADATA", "UNMAPPED_URLS", "NEW_URLS_NOT_MAPPED"].includes(activeTab) &&
           (() => {
             let activeData: any[] = [];
-            if (activeTab === "PAGES") activeData = baseFilteredPages;
+            if (activeTab === "PAGES") activeData = pages.filter((p: any) => p.crawlStatus !== "PENDING");
             if (activeTab === "CRAWLED_PAGES") activeData = crawledPagesReportData;
             if (activeTab === "MISSING_METADATA") activeData = missingMetadataReportData;
             if (activeTab === "UNMAPPED_URLS") activeData = unmappedUrlsReportData;

@@ -640,7 +640,7 @@ export default function CrawlerClient({
                       {["Meta data", "Page structure", "Server", "Page quality", "Links", "External factors"].map(cat => (
                         <button
                           key={cat}
-                          onClick={() => setShareConfig(prev => ({
+                          onClick={() => setShareConfig((prev: any) => ({
                             ...prev,
                             categories: prev.categories?.includes(cat) 
                               ? prev.categories.filter((c: string) => c !== cat) 
@@ -664,7 +664,7 @@ export default function CrawlerClient({
                       {["CRITICAL", "HIGH", "MEDIUM", "LOW"].map(sev => (
                         <button
                           key={sev}
-                          onClick={() => setShareConfig(prev => ({
+                          onClick={() => setShareConfig((prev: any) => ({
                             ...prev,
                             severities: prev.severities?.includes(sev) 
                               ? prev.severities.filter((s: string) => s !== sev) 
@@ -692,7 +692,7 @@ export default function CrawlerClient({
                           <input 
                             type="checkbox"
                             checked={shareConfig.reports?.crawledPages?.enabled ?? true}
-                            onChange={(e) => setShareConfig(prev => ({
+                            onChange={(e) => setShareConfig((prev: any) => ({
                               ...prev,
                               reports: { 
                                 ...(prev.reports || {}), 
@@ -708,7 +708,7 @@ export default function CrawlerClient({
                             <label className="block text-xs text-slate-400">Site to show</label>
                             <select
                               value={shareConfig.reports?.crawledPages?.siteFilter || "ALL"}
-                              onChange={(e) => setShareConfig(prev => ({
+                              onChange={(e) => setShareConfig((prev: any) => ({
                                 ...prev,
                                 reports: { 
                                   ...(prev.reports || {}), 
@@ -731,7 +731,7 @@ export default function CrawlerClient({
                           <input 
                             type="checkbox"
                             checked={shareConfig.reports?.missingMetadata?.enabled ?? false}
-                            onChange={(e) => setShareConfig(prev => ({
+                            onChange={(e) => setShareConfig((prev: any) => ({
                               ...prev,
                               reports: { 
                                 ...(prev.reports || {}), 
@@ -748,7 +748,7 @@ export default function CrawlerClient({
                               <label className="block text-xs text-slate-400 mb-2">Site to check</label>
                               <select
                                 value={shareConfig.reports?.missingMetadata?.siteFilter || "ALL"}
-                                onChange={(e) => setShareConfig(prev => ({
+                                onChange={(e) => setShareConfig((prev: any) => ({
                                   ...prev,
                                   reports: { 
                                     ...(prev.reports || {}), 
@@ -770,7 +770,7 @@ export default function CrawlerClient({
                                     <input 
                                       type="checkbox" 
                                       checked={shareConfig.reports?.missingMetadata?.types?.[type] ?? true} 
-                                      onChange={(e) => setShareConfig(prev => ({
+                                      onChange={(e) => setShareConfig((prev: any) => ({
                                         ...prev,
                                         reports: { 
                                           ...(prev.reports || {}), 
@@ -797,7 +797,7 @@ export default function CrawlerClient({
                           <input 
                             type="checkbox"
                             checked={shareConfig.reports?.unmappedUrls?.enabled ?? false}
-                            onChange={(e) => setShareConfig(prev => ({
+                            onChange={(e) => setShareConfig((prev: any) => ({
                               ...prev,
                               reports: { 
                                 ...(prev.reports || {}), 
@@ -816,7 +816,7 @@ export default function CrawlerClient({
                           <input 
                             type="checkbox"
                             checked={shareConfig.reports?.newUrlsNotMapped?.enabled ?? false}
-                            onChange={(e) => setShareConfig(prev => ({
+                            onChange={(e) => setShareConfig((prev: any) => ({
                               ...prev,
                               reports: { 
                                 ...(prev.reports || {}), 
@@ -912,7 +912,7 @@ export default function CrawlerClient({
                     <input 
                       type="checkbox" 
                       checked={exportMissingTypes.title} 
-                      onChange={(e) => setExportMissingTypes(prev => ({...prev, title: e.target.checked}))} 
+                      onChange={(e) => setExportMissingTypes((prev: any) => ({...prev, title: e.target.checked}))} 
                       className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
                     />
                     Title
@@ -921,7 +921,7 @@ export default function CrawlerClient({
                     <input 
                       type="checkbox" 
                       checked={exportMissingTypes.description} 
-                      onChange={(e) => setExportMissingTypes(prev => ({...prev, description: e.target.checked}))} 
+                      onChange={(e) => setExportMissingTypes((prev: any) => ({...prev, description: e.target.checked}))} 
                       className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
                     />
                     Description
@@ -930,7 +930,7 @@ export default function CrawlerClient({
                     <input 
                       type="checkbox" 
                       checked={exportMissingTypes.canonical} 
-                      onChange={(e) => setExportMissingTypes(prev => ({...prev, canonical: e.target.checked}))} 
+                      onChange={(e) => setExportMissingTypes((prev: any) => ({...prev, canonical: e.target.checked}))} 
                       className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
                     />
                     Canonical
