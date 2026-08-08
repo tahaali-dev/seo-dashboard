@@ -4,7 +4,7 @@ export default function SEOScoreWidget({ scores, minimal = false }: { scores: an
   const { overall, categories } = scores;
 
   return (
-    <div className={`bg-slate-800/50 text-white p-8 rounded-xl border border-slate-700 shadow-lg flex flex-col ${minimal ? 'items-center justify-center' : 'md:flex-row gap-8 items-center md:items-start'}`}>
+    <div className={`bg-black/5 dark:bg-white/5 text-foreground dark:text-white p-8 rounded-xl border border-black/20 dark:border-white/20 shadow-lg flex flex-col ${minimal ? 'items-center justify-center' : 'md:flex-row gap-8 items-center md:items-start'}`}>
       {/* Left: Donut Chart */}
       <div className="shrink-0 flex flex-col items-center">
         <div className="relative w-48 h-48">
@@ -32,10 +32,10 @@ export default function SEOScoreWidget({ scores, minimal = false }: { scores: an
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-bold text-white drop-shadow">
+            <span className="text-4xl font-bold text-foreground dark:text-white drop-shadow">
               {overall}%
             </span>
-            <span className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-medium">
+            <span className="text-xs text-black-60 dark:text-white/60 mt-1 uppercase tracking-widest font-medium">
               Score
             </span>
           </div>
@@ -49,12 +49,12 @@ export default function SEOScoreWidget({ scores, minimal = false }: { scores: an
             {Object.entries(categories).map(([name, score]: [string, any]) => (
               <div key={name} className="group">
                 <div className="flex justify-between text-sm font-medium mb-2">
-                  <span className="text-slate-400 group-hover:text-slate-200 transition-colors">
+                  <span className="text-black-60 dark:text-white/60 group-hover:text-foreground dark:text-white transition-colors">
                     {name}
                   </span>
-                  <span className="text-white font-semibold">{score}%</span>
+                  <span className="text-foreground dark:text-white font-semibold">{score}%</span>
                 </div>
-                <div className="w-full bg-slate-700/50 rounded-full h-2.5 overflow-hidden border border-slate-700/50">
+                <div className="w-full bg-black/10 dark:bg-white/10 rounded-full h-2.5 overflow-hidden border border-black/20 dark:border-white/20/50">
                   <div
                     className={`h-2.5 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(52,211,153,0.5)] 
                       ${score > 80 ? "bg-emerald-400" : score > 50 ? "bg-amber-400" : "bg-rose-500"}`}

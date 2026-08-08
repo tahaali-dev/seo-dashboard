@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import DeleteProjectButton from "./DeleteProjectButton";
+import { Container } from "@/components/ui/layout/container";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -15,24 +17,25 @@ export default async function ProjectsList() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-200 p-8 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <header className="flex justify-between items-end border-b border-slate-800 pb-6">
+    <div className="min-h-screen bg-background py-12 md:py-16 transition-colors">
+      <Container className="space-y-12">
+        <header className="flex flex-col md:flex-row justify-between md:items-end gap-6 border-b border-black/10 dark:border-white/10 pb-6">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="h1 text-foreground dark:text-white mb-2">
               Audited Websites
             </h1>
-            <p className="text-slate-400">
+            <p className="text-b2 text-black-60 dark:text-white/60">
               View and manage all your SEO audits and migrations.
             </p>
           </div>
-          <div>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
             <Link
               href="/new"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2"
+              className="bg-[#E80C08] hover:bg-[#920403] text-white px-6 py-3 rounded-lg text-b4 font-semibold transition-colors shadow-sm flex items-center justify-center gap-2"
             >
               <svg
-                className="w-4 h-4"
+                className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -50,10 +53,10 @@ export default async function ProjectsList() {
         </header>
 
         {projects.length === 0 ? (
-          <div className="bg-slate-800/30 border border-slate-700 rounded-xl p-12 text-center flex flex-col items-center">
-            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-4 border border-slate-700">
+          <div className="bg-white dark:bg-[#1E1E1E] border border-black/10 dark:border-white/10 rounded-2xl p-16 text-center flex flex-col items-center shadow-sm">
+            <div className="w-20 h-20 bg-black/5 dark:bg-white/5 rounded-full flex items-center justify-center mb-6">
               <svg
-                className="w-8 h-8 text-slate-500"
+                className="w-10 h-10 text-black/40"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -66,60 +69,62 @@ export default async function ProjectsList() {
                 />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">
+            <h2 className="h4 text-foreground dark:text-white mb-3">
               No projects yet
             </h2>
-            <p className="text-slate-400 max-w-md mb-6">
+            <p className="text-b3 text-black-60 dark:text-white/60 max-w-md mb-8">
               You haven't run any SEO audits or migrations yet. Create your
               first project to get started.
             </p>
             <Link
               href="/new"
-              className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
+              className="bg-black-main hover:bg-black/80 text-white px-8 py-3.5 rounded-lg font-semibold transition-colors text-b4"
             >
               Create Project
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project) => (
               <div
                 key={project.id}
-                className="group relative bg-slate-800/40 hover:bg-slate-800/80 border border-slate-700 hover:border-indigo-500/50 rounded-xl p-6 transition-all shadow-sm hover:shadow-indigo-500/10 flex flex-col"
+                className="group relative bg-white dark:bg-[#1E1E1E] hover:bg-white dark:bg-[#1A1A1A] border border-black/10 dark:border-white/10 hover:border-black/30 rounded-2xl p-8 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col"
               >
                 <Link
                   href={`/dashboard/${project.id}`}
                   className="absolute inset-0 z-0"
                 />
-                <div className="flex justify-between items-start mb-4 relative z-10">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-1">
+                <div className="flex justify-between items-start mb-6 relative z-10">
+                  <div className="flex flex-col gap-2">
+                    <h2 className="h5 text-foreground dark:text-white group-hover:text-[#E80C08] transition-colors line-clamp-1">
                       {project.name}
                     </h2>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${project.auditType === "FRESH" ? "bg-emerald-500/20 text-emerald-400" : "bg-indigo-500/20 text-indigo-400"}`}
-                    >
-                      {project.auditType}
-                    </span>
+                    <div>
+                      <span
+                        className={`text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider ${project.auditType === "FRESH" ? "bg-black/5 dark:bg-white/5 text-black-main border border-black/10 dark:border-white/10" : "bg-[#FFF5F5] text-[#E80C08] border border-[#E80C08]/20"}`}
+                      >
+                        {project.auditType}
+                      </span>
+                    </div>
                   </div>
                   <DeleteProjectButton id={project.id} />
                 </div>
 
-                <div className="space-y-2 mb-6 flex-1">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500">Target URL</span>
+                <div className="space-y-3 mb-8 flex-1">
+                  <div className="flex flex-col text-sm">
+                    <span className="text-black-60 dark:text-white/60 text-xs font-semibold uppercase tracking-wider mb-1">Target URL</span>
                     <span
-                      className="text-slate-300 truncate max-w-37.5"
+                      className="text-foreground dark:text-white font-medium truncate"
                       title={project.newWebsite}
                     >
                       {project.newWebsite.replace(/^https?:\/\//, "")}
                     </span>
                   </div>
                   {project.auditType === "MIGRATION" && project.oldWebsite && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500">Old URL</span>
+                    <div className="flex flex-col text-sm pt-2">
+                      <span className="text-black-60 dark:text-white/60 text-xs font-semibold uppercase tracking-wider mb-1">Old URL</span>
                       <span
-                        className="text-slate-300 truncate max-w-37.5"
+                        className="text-foreground dark:text-white font-medium truncate"
                         title={project.oldWebsite}
                       >
                         {project.oldWebsite.replace(/^https?:\/\//, "")}
@@ -128,26 +133,26 @@ export default async function ProjectsList() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between pt-5 border-t border-black/10 dark:border-white/10">
+                  <div className="flex items-center gap-6">
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">
+                      <span className="text-[11px] text-black-40 dark:text-white/40 uppercase tracking-widest font-semibold mb-0.5">
                         Pages
                       </span>
-                      <span className="text-slate-300 font-medium">
+                      <span className="text-foreground dark:text-white font-bold">
                         {project._count.pages}
                       </span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">
+                      <span className="text-[11px] text-black-40 dark:text-white/40 uppercase tracking-widest font-semibold mb-0.5">
                         Issues
                       </span>
-                      <span className="text-slate-300 font-medium">
+                      <span className="text-foreground dark:text-white font-bold">
                         {project._count.issues}
                       </span>
                     </div>
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-[13px] font-medium text-black-40 dark:text-white/40">
                     {project.createdAt.toLocaleDateString(undefined, {
                       month: "short",
                       day: "numeric",
@@ -159,7 +164,7 @@ export default async function ProjectsList() {
             ))}
           </div>
         )}
-      </div>
+      </Container>
     </div>
   );
 }

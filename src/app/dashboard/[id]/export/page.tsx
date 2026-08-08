@@ -69,7 +69,7 @@ export default async function ExportPage({
   const newScores = computeScores("NEW", newN);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 p-8 font-sans antialiased">
+    <div className="min-h-screen bg-white dark:bg-[#1E1E1E] text-slate-900 p-8 font-sans antialiased">
       {/* Styles for Printing */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {

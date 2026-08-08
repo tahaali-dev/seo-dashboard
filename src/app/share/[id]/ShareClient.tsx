@@ -7,9 +7,9 @@ import Link from "next/link";
 
 const MinimalDonut = ({ score, colorClass }: { score: number, colorClass: string }) => (
   <div className="relative w-full h-full">
-    <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90 drop-shadow-md">
+    <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
       <path
-        className="text-slate-700/50"
+        className="text-black/10 dark:text-white/10"
         d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
         fill="none"
         stroke="currentColor"
@@ -26,7 +26,7 @@ const MinimalDonut = ({ score, colorClass }: { score: number, colorClass: string
       />
     </svg>
     <div className="absolute inset-0 flex flex-col items-center justify-center">
-      <span className={`text-xl font-bold ${colorClass} drop-shadow`}>
+      <span className={`text-xl font-bold ${colorClass}`}>
         {score}%
       </span>
     </div>
@@ -143,61 +143,61 @@ export default function ShareClient({
 
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Overview Stats */}
       <div className={`grid grid-cols-1 ${project.auditType === "MIGRATION" ? "md:grid-cols-2" : "md:grid-cols-1"} gap-6 mb-8`}>
         {project.auditType === "MIGRATION" && (
-          <div className="bg-slate-800/30 p-6 sm:p-8 rounded-2xl border border-indigo-500/20 flex flex-row items-center justify-between shadow-sm">
+          <div className="bg-white dark:bg-[#1A1A1A] p-8 rounded-3xl border border-black/[0.06] dark:border-white/[0.08] flex flex-row items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-none">
             <div>
-              <h3 className="text-indigo-400/80 font-semibold mb-2 text-sm uppercase tracking-wider">
+              <h3 className="text-[#E80C08]/80 font-bold mb-3 text-xs uppercase tracking-[0.2em]">
                 Old Site
               </h3>
               <div className="flex items-baseline gap-2">
-                <p className="text-4xl sm:text-5xl font-bold text-indigo-400">
+                <p className="text-4xl sm:text-5xl font-extrabold text-[#E80C08] tracking-tight">
                   {oldPages.length}
                 </p>
-                <span className="text-indigo-400/60 text-sm font-medium">Pages</span>
+                <span className="text-[#E80C08]/60 text-sm font-semibold tracking-wide">Pages</span>
               </div>
             </div>
             <div className="w-24 h-24 sm:w-28 sm:h-28 shrink-0">
-              <MinimalDonut score={oldScores.overall} colorClass="text-indigo-400" />
+              <MinimalDonut score={oldScores.overall} colorClass="text-[#E80C08]" />
             </div>
           </div>
         )}
         
-        <div className="bg-slate-800/30 p-6 sm:p-8 rounded-2xl border border-emerald-500/20 flex flex-row items-center justify-between shadow-sm">
+        <div className="bg-white dark:bg-[#1A1A1A] p-8 rounded-3xl border border-black/[0.06] dark:border-white/[0.08] flex flex-row items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-none">
           <div>
-            <h3 className="text-emerald-400/80 font-semibold mb-2 text-sm uppercase tracking-wider">
+            <h3 className="text-emerald-500 font-bold mb-3 text-xs uppercase tracking-[0.2em]">
               {project.auditType === "FRESH" ? "Global Score" : "New Site"}
             </h3>
             <div className="flex items-baseline gap-2">
-              <p className="text-4xl sm:text-5xl font-bold text-emerald-400">
+              <p className="text-4xl sm:text-5xl font-extrabold text-emerald-500 tracking-tight">
                 {newPages.length}
               </p>
-              <span className="text-emerald-400/60 text-sm font-medium">Pages</span>
+              <span className="text-emerald-500/60 text-sm font-semibold tracking-wide">Pages</span>
             </div>
           </div>
           <div className="w-24 h-24 sm:w-28 sm:h-28 shrink-0">
-            <MinimalDonut score={newScores.overall} colorClass="text-emerald-400" />
+            <MinimalDonut score={newScores.overall} colorClass="text-emerald-500" />
           </div>
         </div>
       </div>
 
       {/* Tabs and Filters */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-slate-800/30 p-4 rounded-xl border border-slate-700">
-        <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-700 overflow-x-auto w-full xl:w-auto xl:shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex items-center space-x-2 whitespace-nowrap min-w-max">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-2 bg-white dark:bg-[#1A1A1A] rounded-2xl border border-black/[0.06] dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+        <div className="flex bg-black/[0.04] dark:bg-white/[0.04] p-1.5 rounded-xl overflow-x-auto w-full xl:w-auto xl:shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex items-center space-x-1 whitespace-nowrap min-w-max">
             {project.auditType !== "MIGRATION" && (
               <>
                 <button
                   onClick={() => setActiveTab("ISSUES")}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === "ISSUES" ? "bg-indigo-500/20 text-indigo-400" : "text-slate-400 hover:bg-slate-800"}`}
+                  className={`px-5 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === "ISSUES" ? "bg-white dark:bg-[#1A1A1A] shadow-sm text-foreground dark:text-white" : "text-black-60 dark:text-white/60 hover:text-black-80 dark:text-white/80"}`}
                 >
                   Detected Issues ({issues?.length || 0})
                 </button>
                 <button
                   onClick={() => setActiveTab("PAGES")}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === "PAGES" ? "bg-indigo-500/20 text-indigo-400" : "text-slate-400 hover:bg-slate-800"}`}
+                  className={`px-5 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === "PAGES" ? "bg-white dark:bg-[#1A1A1A] shadow-sm text-foreground dark:text-white" : "text-black-60 dark:text-white/60 hover:text-black-80 dark:text-white/80"}`}
                 >
                   Crawled Pages ({pages.length})
                 </button>
@@ -209,7 +209,7 @@ export default function ShareClient({
                 {reports.crawledPages?.enabled && (
                   <button
                     onClick={() => setActiveTab("CRAWLED_PAGES")}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === "CRAWLED_PAGES" ? "bg-indigo-500/20 text-indigo-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    className={`px-5 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === "CRAWLED_PAGES" ? "bg-white dark:bg-[#1A1A1A] shadow-sm text-foreground dark:text-white" : "text-black-60 dark:text-white/60 hover:text-black-80 dark:text-white/80"}`}
                   >
                     Crawled Pages ({crawledPagesReportData.length})
                   </button>
@@ -217,7 +217,7 @@ export default function ShareClient({
                 {reports.missingMetadata?.enabled && (
                   <button
                     onClick={() => setActiveTab("MISSING_METADATA")}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === "MISSING_METADATA" ? "bg-indigo-500/20 text-indigo-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    className={`px-5 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === "MISSING_METADATA" ? "bg-[#FFF5F5] text-[#E80C08]" : "text-black-60 dark:text-white/60 hover:text-black-80 dark:text-white/80"}`}
                   >
                     Missing Metadata ({missingMetadataReportData.length})
                   </button>
@@ -225,7 +225,7 @@ export default function ShareClient({
                 {reports.unmappedUrls?.enabled && (
                   <button
                     onClick={() => setActiveTab("UNMAPPED_URLS")}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === "UNMAPPED_URLS" ? "bg-indigo-500/20 text-indigo-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    className={`px-5 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === "UNMAPPED_URLS" ? "bg-white dark:bg-[#1A1A1A] shadow-sm text-foreground dark:text-white" : "text-black-60 dark:text-white/60 hover:text-black-80 dark:text-white/80"}`}
                   >
                     Unmapped URLs ({unmappedUrlsReportData.length})
                   </button>
@@ -233,7 +233,7 @@ export default function ShareClient({
                 {reports.newUrlsNotMapped?.enabled && (
                   <button
                     onClick={() => setActiveTab("NEW_URLS_NOT_MAPPED")}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === "NEW_URLS_NOT_MAPPED" ? "bg-indigo-500/20 text-indigo-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    className={`px-5 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === "NEW_URLS_NOT_MAPPED" ? "bg-white dark:bg-[#1A1A1A] shadow-sm text-foreground dark:text-white" : "text-black-60 dark:text-white/60 hover:text-black-80 dark:text-white/80"}`}
                   >
                     New URLs Not Mapped ({newUrlsNotMappedReportData.length})
                   </button>
@@ -241,7 +241,7 @@ export default function ShareClient({
                 {(!reports.crawledPages?.enabled && !reports.missingMetadata?.enabled && !reports.unmappedUrls?.enabled && !reports.newUrlsNotMapped?.enabled) && (
                   <button
                     onClick={() => setActiveTab("ISSUES")}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === "ISSUES" ? "bg-indigo-500/20 text-indigo-400" : "text-slate-400 hover:bg-slate-800"}`}
+                    className={`px-5 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === "ISSUES" ? "bg-white dark:bg-[#1A1A1A] shadow-sm text-foreground dark:text-white" : "text-black-60 dark:text-white/60 hover:text-black-80 dark:text-white/80"}`}
                   >
                     Detected Issues ({issues?.length || 0})
                   </button>
@@ -252,18 +252,18 @@ export default function ShareClient({
         </div>
 
         {activeTab !== "ISSUES" && activeTab !== "DIFF" && (
-          <div className="flex flex-col sm:flex-row items-center gap-3 mt-4 xl:mt-0 shrink-0 w-full xl:w-auto">
+          <div className="flex flex-col sm:flex-row items-center gap-3 px-2 pb-2 xl:p-0 shrink-0 w-full xl:w-auto">
             <input
               type="text"
               placeholder="Search URLs..."
               value={pageSearchQuery}
               onChange={(e) => setPageSearchQuery(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 w-full sm:w-48"
+              className="bg-black/5 dark:bg-white/5 border-transparent text-foreground dark:text-white text-sm font-medium rounded-xl focus:bg-white dark:bg-[#1A1A1A] focus:ring-1 focus:ring-black/20 focus:border-black/20 dark:border-white/20 block px-4 py-2 w-full sm:w-48 transition-all"
             />
             <select
               value={pageStatusFilter}
               onChange={(e) => setPageStatusFilter(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 w-full sm:w-auto"
+              className="bg-black/5 dark:bg-white/5 border-transparent text-foreground dark:text-white text-sm font-medium rounded-xl focus:bg-white dark:bg-[#1A1A1A] focus:ring-1 focus:ring-black/20 focus:border-black/20 dark:border-white/20 block px-4 py-2 w-full sm:w-auto transition-all"
             >
               <option value="ALL">All Statuses</option>
               <option value="SUCCESS">Success Only</option>
@@ -275,16 +275,16 @@ export default function ShareClient({
               (activeTab === "MISSING_METADATA" && (!reports.missingMetadata || reports.missingMetadata.siteFilter === "ALL")) ||
               activeTab === "PAGES"
             ) && (
-              <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-full border border-slate-700 w-full sm:w-auto shrink-0">
+              <div className="flex items-center gap-1 bg-black/[0.04] dark:bg-white/[0.04] p-1.5 rounded-full w-full sm:w-auto shrink-0">
                 <button
                   onClick={() => setSiteFilter("OLD")}
-                  className={`flex-1 sm:flex-none px-6 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors text-center ${siteFilter === "OLD" ? "bg-slate-700 shadow-sm text-indigo-300" : "text-slate-400 hover:text-white"}`}
+                  className={`flex-1 sm:flex-none px-6 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all text-center ${siteFilter === "OLD" ? "bg-white dark:bg-[#1A1A1A] shadow-sm text-[#E80C08]" : "text-black-40 dark:text-white/40 hover:text-black-80 dark:text-white/80"}`}
                 >
                   OLD SITE
                 </button>
                 <button
                   onClick={() => setSiteFilter("NEW")}
-                  className={`flex-1 sm:flex-none px-6 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors text-center ${siteFilter === "NEW" ? "bg-slate-700 shadow-sm text-emerald-300" : "text-slate-400 hover:text-white"}`}
+                  className={`flex-1 sm:flex-none px-6 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all text-center ${siteFilter === "NEW" ? "bg-white dark:bg-[#1A1A1A] shadow-sm text-emerald-500" : "text-black-40 dark:text-white/40 hover:text-black-80 dark:text-white/80"}`}
                 >
                   NEW SITE
                 </button>
@@ -362,24 +362,24 @@ export default function ShareClient({
                     return (
                       <div
                         key={cat}
-                        className="bg-slate-800/30 rounded-xl border border-slate-700 overflow-hidden transition-all duration-200 shadow-sm"
+                        className="bg-white dark:bg-[#1A1A1A] rounded-2xl border border-black/5 dark:border-white/10 overflow-hidden transition-all duration-300 shadow-[0_2px_14px_rgba(0,0,0,0.03)]"
                       >
                         <button
                           onClick={() => toggleCategory(cat)}
-                          className="w-full flex items-center justify-between p-4 bg-slate-800/50 hover:bg-slate-800/80 transition-colors"
+                          className="w-full flex items-center justify-between p-5 bg-white dark:bg-[#1A1A1A] hover:bg-[#FAFAFA] dark:hover:bg-white/10 transition-colors"
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-lg font-semibold text-white">
+                          <div className="flex items-center gap-4">
+                            <span className="text-lg font-bold text-foreground dark:text-white tracking-tight">
                               {cat === "Static"
                                 ? "Static Pages"
                                 : `${cat} Pages`}
                             </span>
-                            <span className="bg-slate-700 text-slate-300 text-xs font-bold px-2 py-0.5 rounded-full">
+                            <span className="bg-black/5 dark:bg-white/5 text-black-80 dark:text-white/80 text-xs font-extrabold px-3 py-1 rounded-full border border-black/[0.04] dark:border-white/5">
                               {catPages.length}
                             </span>
                           </div>
                           <svg
-                            className={`w-5 h-5 text-slate-400 transform transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                            className={`w-5 h-5 text-black-40 dark:text-white/40 transform transition-transform ${isExpanded ? "rotate-180" : ""}`}
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -394,36 +394,36 @@ export default function ShareClient({
                         </button>
 
                         {isExpanded && (
-                          <div className="overflow-x-auto border-t border-slate-700">
+                          <div className="overflow-x-auto border-t border-black/5 dark:border-white/10">
                             <table className="w-full text-left text-sm">
-                              <thead className="bg-slate-800/50 text-slate-400 border-b border-slate-700">
+                              <thead className="bg-[#FAFAFA] dark:bg-[#1A1A1A] text-black-60 dark:text-white/60 border-b border-black/5 dark:border-white/10">
                                 <tr>
-                                  <th className="px-4 py-3">URL</th>
-                                  <th className="px-4 py-3">Site</th>
-                                  <th className="px-4 py-3">Status</th>
+                                  <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">URL</th>
+                                  <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Site</th>
+                                  <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Status</th>
                                   {activeTab === "MISSING_METADATA" && reports.missingMetadata?.types?.title && (
-                                    <th className="px-4 py-3 text-center">Title</th>
+                                    <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-center">Title</th>
                                   )}
                                   {activeTab === "MISSING_METADATA" && reports.missingMetadata?.types?.description && (
-                                    <th className="px-4 py-3 text-center">Description</th>
+                                    <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-center">Description</th>
                                   )}
                                   {activeTab === "MISSING_METADATA" && reports.missingMetadata?.types?.canonical && (
-                                    <th className="px-4 py-3 text-center">Canonical</th>
+                                    <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-center">Canonical</th>
                                   )}
                                 </tr>
                               </thead>
-                              <tbody className="divide-y divide-slate-800">
+                              <tbody className="divide-y divide-black/[0.05] dark:divide-white/[0.05] bg-white dark:bg-[#171717]">
                                 {catPages.map((page) => (
                                   <tr
                                     key={page.id}
-                                    className="hover:bg-slate-800/30 transition-colors"
+                                    className="hover:bg-[#FAFAFA] dark:hover:bg-white/10 transition-colors"
                                   >
-                                    <td className="px-4 py-3 text-slate-300 truncate max-w-xs" title={page.url}>
+                                    <td className="px-6 py-4 text-black-80 dark:text-white/80 truncate max-w-xs font-medium" title={page.url}>
                                       <a
                                         href={page.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="hover:text-indigo-400 hover:underline transition-colors block w-full truncate"
+                                        className="hover:text-[#E80C08] hover:underline transition-colors block w-full truncate"
                                       >
                                         {(() => {
                                           try {
@@ -435,16 +435,16 @@ export default function ShareClient({
                                         })()}
                                       </a>
                                     </td>
-                                    <td className="px-4 py-3">
+                                    <td className="px-6 py-4">
                                       <span
-                                        className={`px-2 py-1 rounded text-[10px] font-bold tracking-wider ${page.siteType === "OLD" ? "bg-indigo-500/20 text-indigo-400" : "bg-emerald-500/20 text-emerald-400"}`}
+                                        className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold tracking-widest uppercase ${page.siteType === "OLD" ? "bg-[#FFF5F5] text-[#E80C08] border border-[#E80C08]/20" : "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-200 dark:border-emerald-500/20"}`}
                                       >
                                         {page.siteType}
                                       </span>
                                     </td>
-                                    <td className="px-4 py-3">
+                                    <td className="px-6 py-4">
                                       <span
-                                        className={`px-2 py-1 rounded text-xs font-medium ${page.crawlStatus === "SUCCESS" ? "bg-green-500/20 text-green-400" : page.crawlStatus === "ERROR" ? "bg-red-500/20 text-red-400" : "bg-yellow-500/20 text-yellow-400"}`}
+                                        className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold tracking-widest uppercase ${page.crawlStatus === "SUCCESS" ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-200 dark:border-emerald-500/20" : page.crawlStatus === "ERROR" ? "bg-[#FFF5F5] text-[#E80C08] border border-[#E80C08]/20" : "bg-yellow-50 dark:bg-yellow-500/10 text-yellow-600 border border-yellow-200 dark:border-yellow-500/20"}`}
                                       >
                                         {page.crawlStatus}
                                       </span>
@@ -453,22 +453,22 @@ export default function ShareClient({
                                       let meta = { title: "", description: "", canonical: "" };
                                       try { if (page.metadata) meta = JSON.parse(page.metadata); } catch(e) {}
                                       
-                                      const MissingBadge = () => <span className="text-red-400/80 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">Missing</span>;
+                                      const MissingBadge = () => <span className="text-[#E80C08] bg-[#FFF5F5] border border-[#E80C08]/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">Missing</span>;
                                       
                                       return (
                                         <>
                                           {reports.missingMetadata?.types?.title && (
-                                            <td className="px-4 py-3 text-center">
+                                            <td className="px-6 py-4 text-center">
                                               {(!meta.title || meta.title.trim() === "") && <MissingBadge />}
                                             </td>
                                           )}
                                           {reports.missingMetadata?.types?.description && (
-                                            <td className="px-4 py-3 text-center">
+                                            <td className="px-6 py-4 text-center">
                                               {(!meta.description || meta.description.trim() === "") && <MissingBadge />}
                                             </td>
                                           )}
                                           {reports.missingMetadata?.types?.canonical && (
-                                            <td className="px-4 py-3 text-center">
+                                            <td className="px-6 py-4 text-center">
                                               {(!meta.canonical || meta.canonical.trim() === "") && <MissingBadge />}
                                             </td>
                                           )}

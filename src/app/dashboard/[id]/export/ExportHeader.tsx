@@ -19,7 +19,7 @@ export default function ExportHeader() {
         </button>
         <button
           onClick={() => window.close()}
-          className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+          className="bg-white dark:bg-[#1E1E1E] border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
         >
           Close Window
         </button>

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation"
 import { cookies } from "next/headers"
 import PasswordForm from "./PasswordForm"
 import ShareClient from "./ShareClient"
+import { Container } from "@/components/ui/layout/container"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 export const dynamic = "force-dynamic"
 
@@ -85,17 +87,18 @@ export default async function SharePage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-200 p-4 sm:p-8 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <header className="flex justify-between items-end border-b border-slate-800 pb-6 relative">
+    <div className="min-h-screen bg-background py-8 md:py-16 transition-colors">
+      <Container className="space-y-8 md:space-y-12">
+        <header className="flex flex-col sm:flex-row justify-between sm:items-end gap-4 border-b border-black/10 dark:border-white/10 pb-6 relative">
           <div className="pt-2">
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="h1 text-foreground dark:text-white mb-2">
               {project.name}
             </h1>
-            <p className="text-slate-400">SEO Audit Report (Shared View)</p>
+            <p className="text-b2 text-black-60 dark:text-white/60">SEO Audit Report (Shared View)</p>
           </div>
-          <div className="text-sm text-slate-500">
-            Generated: {project.createdAt.toLocaleDateString()}
+          <div className="flex items-center gap-4 text-[13px] font-medium text-black-40 dark:text-white/40 sm:pb-2">
+            Generated: {project.createdAt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+            <ThemeToggle />
           </div>
         </header>
 
@@ -106,7 +109,7 @@ export default async function SharePage({ params }: { params: Promise<{ id: stri
           oldScores={oldScores}
           newScores={newScores}
         />
-      </div>
+      </Container>
     </div>
   )
 }

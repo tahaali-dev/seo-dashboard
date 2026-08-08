@@ -14,7 +14,7 @@ export default function PasswordForm({ projectId, projectName }: { projectId: st
     e.preventDefault()
     setLoading(true)
     setError("")
-    
+
     const res = await verifySharePassword(projectId, password)
     if (res.error) {
       setError(res.error)
@@ -25,61 +25,100 @@ export default function PasswordForm({ projectId, projectName }: { projectId: st
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f] p-4 relative overflow-hidden">
-      {/* Background glowing orbs */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/20 rounded-full mix-blend-screen filter blur-[100px] animate-pulse"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-purple-500/20 rounded-full mix-blend-screen filter blur-[80px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+    <div className="min-h-screen flex items-center justify-center bg-[#F7F7F7] p-4 sm:p-8 font-sans">
+      <div className="w-full max-w-[1100px] bg-white dark:bg-[#1E1E1E] rounded-3xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col md:flex-row min-h-[650px] border border-gray-100">
 
-      <div className="max-w-md w-full bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-[2rem] shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] p-10 relative z-10 text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 mb-8 shadow-[0_0_30px_rgba(99,102,241,0.5)] border border-white/20">
-          <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-        </div>
-        
-        <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 mb-3 tracking-tight">Protected Report</h2>
-        <p className="text-slate-400 mb-10 text-sm leading-relaxed px-4">
-          Enter the password to view the SEO report for <strong className="text-indigo-300 font-semibold">{projectName}</strong>
-        </p>
+        {/* Left Panel - White Form */}
+        <div className="w-full md:w-1/2 flex flex-col justify-center p-8 md:p-16 lg:p-20 bg-white dark:bg-[#1E1E1E] relative z-10">
+          <div className="max-w-[340px] mx-auto w-full text-center">
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm text-center animate-in fade-in slide-in-from-top-2">
-              {error}
+            <h2 className="text-[26px] md:text-[28px] font-semibold text-[#252423] tracking-tight mb-2 leading-tight">
+              Log in to view <br />
+              <span className="font-bold">{projectName}</span>
+            </h2>
+
+            <div className="w-full flex items-center gap-4 my-8">
+              <div className="h-[1px] bg-gray-200 flex-1"></div>
+              <span className="text-[#252423]/40 text-xs font-medium uppercase tracking-wider">Secure Report</span>
+              <div className="h-[1px] bg-gray-200 flex-1"></div>
             </div>
-          )}
 
-          <div className="relative group">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/30 to-purple-500/30 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-500 group-focus-within:opacity-100"></div>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="relative w-full bg-[#0f111a] border border-white/10 text-white rounded-xl px-4 py-4 focus:outline-none focus:border-indigo-500/50 transition-all placeholder:text-slate-600 text-center text-xl tracking-[0.3em] font-mono shadow-[inset_0_0_0_1000px_#0f111a] [-webkit-text-fill-color:white]"
-              placeholder="••••••••"
-            />
-          </div>
+            <form onSubmit={handleSubmit} className="space-y-4 text-left">
+              {error && (
+                <div className="p-3 bg-[#FFF5F5] text-[#E80C08] rounded-lg text-sm border border-[#E80C08]/20 animate-in fade-in">
+                  {error}
+                </div>
+              )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full relative group overflow-hidden bg-white/5 text-white font-semibold rounded-xl px-4 py-4 transition-all disabled:opacity-50 border border-white/10 hover:border-white/20 hover:bg-white/10"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              {loading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg className="w-5 h-5 text-[#252423]/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                  Verifying...
-                </>
-              ) : "View Report"}
-            </span>
-          </button>
-        </form>
+                </div>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-white dark:bg-[#1A1A1A] border border-[#E5E5E5] text-[#252423] rounded-xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-[#252423] focus:ring-1 focus:ring-[#252423] transition-all placeholder:text-[#252423]/40 text-[15px]"
+                  placeholder="Your Password"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#E80C08] hover:bg-[#920403] text-white font-semibold rounded-xl px-4 py-3.5 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E80C08] disabled:opacity-70 disabled:cursor-not-allowed mt-2 flex items-center justify-center text-[15px]"
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Verifying...
+                  </>
+                ) : "Log in"}
+              </button>
+            </form>
+
+            <div className="mt-8 text-[13px] text-[#252423]/60">
+              Need access? <a href="#" className="font-semibold text-[#252423] hover:text-[#E80C08] transition-colors">Request password</a>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Panel - Abstract Visual (Charcoal & Crimson) */}
+        <div className="hidden md:block md:w-1/2 relative bg-[#111111] overflow-hidden">
+          {/* Noise overlay */}
+          <svg className="absolute inset-0 w-full h-full opacity-[0.15] mix-blend-overlay pointer-events-none z-20">
+            <filter id="noise">
+              <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#noise)" />
+          </svg>
+
+          {/* Abstract Red Shapes mimicking the inspiration */}
+          <div className="absolute top-[-10%] right-[-20%] w-[80%] h-[120%] bg-[#E80C08] blur-[100px] rounded-full opacity-60 mix-blend-screen transform rotate-12 z-0 animate-pulse" style={{ animationDuration: '8s' }}></div>
+          <div className="absolute bottom-[-20%] left-[-10%] w-[90%] h-[80%] bg-[#920403] blur-[120px] rounded-full opacity-80 z-0"></div>
+
+          {/* Geometric slashes */}
+          <div className="absolute top-[10%] left-[20%] w-[120%] h-[20%] bg-gradient-to-r from-[#E80C08] to-transparent opacity-40 transform -rotate-45 blur-md z-10"></div>
+          <div className="absolute top-[30%] left-[10%] w-[150%] h-[15%] bg-gradient-to-r from-[#FACECE] to-transparent opacity-20 transform -rotate-45 blur-lg z-10"></div>
+
+          {/* Bottom gradient fade to charcoal */}
+          <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#252423] to-transparent z-10"></div>
+
+          {/* Tagline overlay */}
+          <div className="absolute bottom-8 left-8 z-30 flex items-center gap-3">
+            <div className="w-6 h-6 rounded-full bg-[#FACECE] flex items-center justify-center shadow-lg">
+              <div className="w-2 h-2 rounded-full bg-[#E80C08]"></div>
+            </div>
+            <span className="text-white text-sm font-medium tracking-wide">SEO Dashboard <span className="text-white/40">by Hexcode Studio</span></span>
+          </div>
+        </div>
+
       </div>
     </div>
   )

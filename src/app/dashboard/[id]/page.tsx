@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import CrawlerClient from "./CrawlerClient";
+import { Container } from "@/components/ui/layout/container";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +29,11 @@ export default async function DashboardPage({
   });
 
   if (!project) {
-    return <div>Project not found</div>;
+    return (
+      <div className="min-h-screen bg-background py-16 flex items-center justify-center">
+        <h2 className="h4 text-foreground dark:text-white">Project not found</h2>
+      </div>
+    );
   }
 
   const oldPages = project.pages.filter((p: any) => p.siteType === "OLD");
@@ -63,13 +69,13 @@ export default async function DashboardPage({
   const newScores = computeScores("NEW", newN);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-200 p-8 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <header className="flex justify-between items-end border-b border-slate-800 pb-6 relative">
-          <div className="absolute -top-4 left-0 flex items-center gap-4">
+    <div className="min-h-screen bg-background py-12 md:py-16 transition-colors">
+      <Container className="space-y-12">
+        <header className="flex flex-col md:flex-row justify-between md:items-end gap-6 border-b border-black/10 dark:border-white/10 pb-6 relative">
+          <div className="absolute -top-6 left-0 flex items-center gap-4">
             <a
               href="/"
-              className="text-slate-400 hover:text-white text-sm font-medium flex items-center gap-1 transition-colors"
+              className="text-black-60 dark:text-white/60 hover:text-black-main text-[13px] font-semibold tracking-wide uppercase flex items-center gap-1 transition-colors"
             >
               <svg
                 className="w-4 h-4"
@@ -86,10 +92,10 @@ export default async function DashboardPage({
               </svg>
               All Projects
             </a>
-            <span className="text-slate-700">|</span>
+            <span className="text-black-20">|</span>
             <a
               href="/new"
-              className="text-indigo-400 hover:text-indigo-300 text-sm font-medium flex items-center gap-1 transition-colors"
+              className="text-[#E80C08] hover:text-[#920403] text-[13px] font-semibold tracking-wide uppercase flex items-center gap-1 transition-colors"
             >
               <svg
                 className="w-4 h-4"
@@ -108,13 +114,14 @@ export default async function DashboardPage({
             </a>
           </div>
           <div className="pt-6">
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="h1 text-foreground dark:text-white mb-2">
               {project.name}
             </h1>
-            <p className="text-slate-400">Dashboard & Crawl Engine</p>
+            <p className="text-b2 text-black-60 dark:text-white/60">Dashboard & Crawl Engine</p>
           </div>
-          <div className="text-sm text-slate-500">
-            Created: {project.createdAt.toLocaleDateString()}
+          <div className="flex items-center gap-4 text-[13px] font-medium text-black-40 dark:text-white/40 pb-2">
+            Created: {project.createdAt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+            <ThemeToggle />
           </div>
         </header>
 
@@ -125,7 +132,7 @@ export default async function DashboardPage({
           oldScores={oldScores}
           newScores={newScores}
         />
-      </div>
+      </Container>
     </div>
   );
 }

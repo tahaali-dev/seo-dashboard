@@ -447,16 +447,16 @@ export default function CrawlerClient({
   return (
     <div className="space-y-8">
       {isAutoRunning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-          <div className="w-full max-w-lg bg-slate-900/90 border border-slate-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden flex flex-col items-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-lg bg-white dark:bg-[#1C1C1C] border border-black/[0.06] dark:border-white/[0.08] rounded-2xl p-8 shadow-2xl relative overflow-hidden flex flex-col items-center">
             {/* Decorative gradient blur background */}
-            <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#E80C08]/10 rounded-full blur-3xl pointer-events-none"></div>
             <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
             {/* Spinner/Header */}
             <div className="mb-6 relative flex items-center justify-center">
               {autoRunStep !== "COMPLETE" ? (
-                <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-spin"></div>
+                <div className="w-16 h-16 rounded-full border-4 border-black/10 dark:border-white/10 border-t-indigo-500 animate-spin"></div>
               ) : (
                 <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center animate-bounce">
                   <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -466,13 +466,13 @@ export default function CrawlerClient({
               )}
             </div>
 
-            <h3 className="text-xl font-bold text-white mb-2 text-center">
+            <h3 className="text-xl font-bold text-foreground dark:text-white mb-2 text-center">
               {autoRunStep === "DISCOVER" && "Discovering Pages"}
               {autoRunStep === "CRAWL" && "Crawling Site Content"}
               {autoRunStep === "AUDIT" && "Analyzing SEO Issues"}
               {autoRunStep === "COMPLETE" && "SEO Audit Complete!"}
             </h3>
-            <p className="text-sm text-slate-400 text-center mb-8 max-w-sm">
+            <p className="text-sm text-black-60 dark:text-white/60 text-center mb-8 max-w-sm">
               {autoRunStep === "DISCOVER" && "Parsing sitemaps and scanning landing pages to locate all URLs..."}
               {autoRunStep === "CRAWL" && `Crawling and extracting metadata, keywords, and outbound links...`}
               {autoRunStep === "AUDIT" && "Applying SEO rules, validating outbound links, and calculating scores..."}
@@ -486,10 +486,10 @@ export default function CrawlerClient({
                 <div className="flex items-center gap-3">
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
                     autoRunStep === "DISCOVER" 
-                      ? "bg-indigo-500 text-white animate-pulse" 
+                      ? "bg-[#E80C08] text-foreground dark:text-white animate-pulse" 
                       : (autoRunStep === "CRAWL" || autoRunStep === "AUDIT" || autoRunStep === "COMPLETE")
-                        ? "bg-indigo-500/20 text-indigo-400"
-                        : "bg-slate-800 text-slate-500"
+                        ? "bg-[#FFF5F5] text-[#E80C08]"
+                        : "bg-black/5 dark:bg-white/5 text-black-40 dark:text-white/40"
                   }`}>
                     {(autoRunStep === "CRAWL" || autoRunStep === "AUDIT" || autoRunStep === "COMPLETE") ? (
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,11 +497,11 @@ export default function CrawlerClient({
                       </svg>
                     ) : "1"}
                   </span>
-                  <span className={autoRunStep === "DISCOVER" ? "text-white font-medium" : "text-slate-400"}>
+                  <span className={autoRunStep === "DISCOVER" ? "text-foreground dark:text-white font-medium" : "text-black-60 dark:text-white/60"}>
                     URL Discovery
                   </span>
                 </div>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-black-40 dark:text-white/40">
                   {autoRunStep === "DISCOVER" ? "In progress..." : (autoRunStep !== "IDLE" ? "Done" : "Pending")}
                 </span>
               </div>
@@ -512,10 +512,10 @@ export default function CrawlerClient({
                   <div className="flex items-center gap-3">
                     <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
                       autoRunStep === "CRAWL" 
-                        ? "bg-indigo-500 text-white animate-pulse" 
+                        ? "bg-[#E80C08] text-foreground dark:text-white animate-pulse" 
                         : (autoRunStep === "AUDIT" || autoRunStep === "COMPLETE")
-                          ? "bg-indigo-500/20 text-indigo-400"
-                          : "bg-slate-800 text-slate-500"
+                          ? "bg-[#FFF5F5] text-[#E80C08]"
+                          : "bg-black/5 dark:bg-white/5 text-black-40 dark:text-white/40"
                     }`}>
                       {(autoRunStep === "AUDIT" || autoRunStep === "COMPLETE") ? (
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -523,20 +523,20 @@ export default function CrawlerClient({
                         </svg>
                       ) : "2"}
                     </span>
-                    <span className={autoRunStep === "CRAWL" ? "text-white font-medium" : "text-slate-400"}>
+                    <span className={autoRunStep === "CRAWL" ? "text-foreground dark:text-white font-medium" : "text-black-60 dark:text-white/60"}>
                       Page Crawling
                     </span>
                   </div>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-black-40 dark:text-white/40">
                     {autoRunStep === "CRAWL" 
                       ? `${Math.round(crawlProgress)}%` 
                       : (autoRunStep === "AUDIT" || autoRunStep === "COMPLETE") ? "Done" : "Pending"}
                   </span>
                 </div>
                 {autoRunStep === "CRAWL" && (
-                  <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div className="w-full bg-black/5 dark:bg-white/5 rounded-full h-1.5 overflow-hidden">
                     <div 
-                      className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300"
+                      className="bg-[#E80C08] h-1.5 rounded-full transition-all duration-300"
                       style={{ width: `${crawlProgress}%` }}
                     ></div>
                   </div>
@@ -548,10 +548,10 @@ export default function CrawlerClient({
                 <div className="flex items-center gap-3">
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
                     autoRunStep === "AUDIT" 
-                      ? "bg-indigo-500 text-white animate-pulse" 
+                      ? "bg-[#E80C08] text-foreground dark:text-white animate-pulse" 
                       : autoRunStep === "COMPLETE"
-                        ? "bg-indigo-500/20 text-indigo-400"
-                        : "bg-slate-800 text-slate-500"
+                        ? "bg-[#FFF5F5] text-[#E80C08]"
+                        : "bg-black/5 dark:bg-white/5 text-black-40 dark:text-white/40"
                   }`}>
                     {autoRunStep === "COMPLETE" ? (
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -559,11 +559,11 @@ export default function CrawlerClient({
                       </svg>
                     ) : "3"}
                   </span>
-                  <span className={autoRunStep === "AUDIT" ? "text-white font-medium" : "text-slate-400"}>
+                  <span className={autoRunStep === "AUDIT" ? "text-foreground dark:text-white font-medium" : "text-black-60 dark:text-white/60"}>
                     SEO Auditing
                   </span>
                 </div>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-black-40 dark:text-white/40">
                   {autoRunStep === "AUDIT" ? "In progress..." : (autoRunStep === "COMPLETE" ? "Done" : "Pending")}
                 </span>
               </div>
@@ -572,18 +572,18 @@ export default function CrawlerClient({
         </div>
       )}
       {isShareOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-800 mb-6">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-lg bg-white dark:bg-[#1C1C1C] border border-black/[0.06] dark:border-white/[0.08] rounded-2xl p-6 shadow-2xl relative overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center pb-4 border-b border-black/10 dark:border-white/10 mb-6">
+              <h3 className="text-xl font-bold text-foreground dark:text-white flex items-center gap-2">
+                <svg className="w-5 h-5 text-[#E80C08]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
                 Share SEO Report
               </h3>
               <button
                 onClick={() => setIsShareOpen(false)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-black-60 dark:text-white/60 hover:text-foreground dark:text-white transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -600,27 +600,27 @@ export default function CrawlerClient({
                       type="text" 
                       readOnly 
                       value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${project.id}`}
-                      className="bg-slate-950 border border-slate-700 text-slate-300 rounded px-3 py-2 text-sm w-full outline-none"
+                      className="bg-white dark:bg-[#1A1A1A] border border-black/20 dark:border-white/20 text-black-80 dark:text-white/80 rounded px-3 py-2 text-sm w-full outline-none"
                     />
                     <button 
                       onClick={() => {
                         navigator.clipboard.writeText(`${window.location.origin}/share/${project.id}`);
                         alert('Link copied to clipboard!');
                       }}
-                      className="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                      className="bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:bg-white/10 text-foreground dark:text-white px-3 py-2 rounded text-sm transition-colors"
                     >
                       Copy
                     </button>
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-black-60 dark:text-white/60">
                   Share this project with clients by generating a password-protected link.
                 </p>
               )}
 
               <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                <label className="block text-sm font-semibold text-black-80 dark:text-white/80 mb-2">
                   {isShared ? "Update Password (leave blank to keep current)" : "Set Password"}
                 </label>
                 <input
@@ -628,14 +628,14 @@ export default function CrawlerClient({
                   value={sharePassword}
                   onChange={(e) => setSharePassword(e.target.value)}
                   placeholder={isShared ? "Leave blank to keep current password..." : "Enter a secure password..."}
-                  className="w-full bg-slate-950/50 border border-slate-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-slate-600 mb-6"
+                  className="w-full bg-white dark:bg-[#1A1A1A] border border-black/10 dark:border-white/10 text-foreground dark:text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-[#E80C08] transition-all placeholder:text-slate-600 mb-6"
                 />
 
                 <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-slate-300 border-b border-slate-800 pb-2">Filter Shared Data</h4>
+                  <h4 className="text-sm font-semibold text-black-80 dark:text-white/80 border-b border-black/10 dark:border-white/10 pb-2">Filter Shared Data</h4>
                   
                   <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-2">Categories to Share (leave empty for all)</label>
+                    <label className="block text-xs font-medium text-black-60 dark:text-white/60 mb-2">Categories to Share (leave empty for all)</label>
                     <div className="flex flex-wrap gap-2">
                       {["Meta data", "Page structure", "Server", "Page quality", "Links", "External factors"].map(cat => (
                         <button
@@ -648,8 +648,8 @@ export default function CrawlerClient({
                           }))}
                           className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                             shareConfig.categories?.includes(cat) 
-                              ? "bg-indigo-500/20 border-indigo-500/50 text-indigo-300" 
-                              : "bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200"
+                              ? "bg-[#FFF5F5] border-[#E80C08]/50 text-[#E80C08]" 
+                              : "bg-white dark:bg-[#1E1E1E] border-black/20 dark:border-white/20 text-black-60 dark:text-white/60 hover:text-foreground dark:text-white"
                           }`}
                         >
                           {cat}
@@ -659,7 +659,7 @@ export default function CrawlerClient({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-2">Severities to Share (leave empty for all)</label>
+                    <label className="block text-xs font-medium text-black-60 dark:text-white/60 mb-2">Severities to Share (leave empty for all)</label>
                     <div className="flex flex-wrap gap-2">
                       {["CRITICAL", "HIGH", "MEDIUM", "LOW"].map(sev => (
                         <button
@@ -672,8 +672,8 @@ export default function CrawlerClient({
                           }))}
                           className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                             shareConfig.severities?.includes(sev) 
-                              ? "bg-indigo-500/20 border-indigo-500/50 text-indigo-300" 
-                              : "bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200"
+                              ? "bg-[#FFF5F5] border-[#E80C08]/50 text-[#E80C08]" 
+                              : "bg-white dark:bg-[#1E1E1E] border-black/20 dark:border-white/20 text-black-60 dark:text-white/60 hover:text-foreground dark:text-white"
                           }`}
                         >
                           {sev}
@@ -683,12 +683,12 @@ export default function CrawlerClient({
                   </div>
                   
                   {project.auditType === "MIGRATION" && (
-                    <div className="mt-6 pt-6 border-t border-slate-800 space-y-4">
-                      <h4 className="text-sm font-semibold text-slate-300">Migration Data Views</h4>
+                    <div className="mt-6 pt-6 border-t border-black/10 dark:border-white/10 space-y-4">
+                      <h4 className="text-sm font-semibold text-black-80 dark:text-white/80">Migration Data Views</h4>
                       
                       {/* Total Crawled Pages */}
-                      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 space-y-3">
-                        <label className="flex items-center gap-3 text-sm text-slate-200 font-medium cursor-pointer">
+                      <div className="bg-white dark:bg-[#1E1E1E] p-4 rounded-lg border border-black/10 dark:border-white/10 space-y-3">
+                        <label className="flex items-center gap-3 text-sm text-foreground dark:text-white font-medium cursor-pointer">
                           <input 
                             type="checkbox"
                             checked={shareConfig.reports?.crawledPages?.enabled ?? true}
@@ -699,13 +699,13 @@ export default function CrawlerClient({
                                 crawledPages: { ...(prev.reports?.crawledPages || {}), enabled: e.target.checked }
                               }
                             }))}
-                            className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
+                            className="rounded border-black/20 dark:border-white/20 bg-white dark:bg-[#1E1E1E] text-[#E80C08] focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
                           />
                           Total Crawled Pages
                         </label>
                         {shareConfig.reports?.crawledPages?.enabled && (
                           <div className="pl-7 space-y-2">
-                            <label className="block text-xs text-slate-400">Site to show</label>
+                            <label className="block text-xs text-black-60 dark:text-white/60">Site to show</label>
                             <select
                               value={shareConfig.reports?.crawledPages?.siteFilter || "ALL"}
                               onChange={(e) => setShareConfig((prev: any) => ({
@@ -715,7 +715,7 @@ export default function CrawlerClient({
                                   crawledPages: { ...(prev.reports?.crawledPages || {}), siteFilter: e.target.value }
                                 }
                               }))}
-                              className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2"
+                              className="bg-white dark:bg-[#1E1E1E] border border-black/20 dark:border-white/20 text-black-80 dark:text-white/80 text-xs rounded-lg focus:ring-indigo-500 focus:border-[#E80C08] block w-full p-2"
                             >
                               <option value="ALL">All Sites (Old & New)</option>
                               <option value="OLD">Old Site Only</option>
@@ -726,8 +726,8 @@ export default function CrawlerClient({
                       </div>
 
                       {/* Missing Metadata */}
-                      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 space-y-3">
-                        <label className="flex items-center gap-3 text-sm text-slate-200 font-medium cursor-pointer">
+                      <div className="bg-white dark:bg-[#1E1E1E] p-4 rounded-lg border border-black/10 dark:border-white/10 space-y-3">
+                        <label className="flex items-center gap-3 text-sm text-foreground dark:text-white font-medium cursor-pointer">
                           <input 
                             type="checkbox"
                             checked={shareConfig.reports?.missingMetadata?.enabled ?? false}
@@ -738,14 +738,14 @@ export default function CrawlerClient({
                                 missingMetadata: { ...(prev.reports?.missingMetadata || {}), enabled: e.target.checked }
                               }
                             }))}
-                            className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
+                            className="rounded border-black/20 dark:border-white/20 bg-white dark:bg-[#1E1E1E] text-[#E80C08] focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
                           />
                           Missing Metadata URLs
                         </label>
                         {shareConfig.reports?.missingMetadata?.enabled && (
                           <div className="pl-7 space-y-4">
                             <div>
-                              <label className="block text-xs text-slate-400 mb-2">Site to check</label>
+                              <label className="block text-xs text-black-60 dark:text-white/60 mb-2">Site to check</label>
                               <select
                                 value={shareConfig.reports?.missingMetadata?.siteFilter || "ALL"}
                                 onChange={(e) => setShareConfig((prev: any) => ({
@@ -755,7 +755,7 @@ export default function CrawlerClient({
                                     missingMetadata: { ...(prev.reports?.missingMetadata || {}), siteFilter: e.target.value }
                                   }
                                 }))}
-                                className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2"
+                                className="bg-white dark:bg-[#1E1E1E] border border-black/20 dark:border-white/20 text-black-80 dark:text-white/80 text-xs rounded-lg focus:ring-indigo-500 focus:border-[#E80C08] block w-full p-2"
                               >
                                 <option value="ALL">All Sites (Old & New)</option>
                                 <option value="OLD">Old Site Only</option>
@@ -763,10 +763,10 @@ export default function CrawlerClient({
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs text-slate-400 mb-2">Include URLs missing:</label>
+                              <label className="block text-xs text-black-60 dark:text-white/60 mb-2">Include URLs missing:</label>
                               <div className="flex flex-wrap gap-4">
                                 {["title", "description", "canonical"].map(type => (
-                                  <label key={type} className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                                  <label key={type} className="flex items-center gap-2 text-xs text-black-80 dark:text-white/80 cursor-pointer">
                                     <input 
                                       type="checkbox" 
                                       checked={shareConfig.reports?.missingMetadata?.types?.[type] ?? true} 
@@ -780,7 +780,7 @@ export default function CrawlerClient({
                                           }
                                         }
                                       }))} 
-                                      className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
+                                      className="rounded border-black/20 dark:border-white/20 bg-white dark:bg-[#1E1E1E] text-[#E80C08] focus:ring-indigo-500/50 cursor-pointer" 
                                     />
                                     {type.charAt(0).toUpperCase() + type.slice(1)}
                                   </label>
@@ -792,8 +792,8 @@ export default function CrawlerClient({
                       </div>
 
                       {/* Unmapped URLs */}
-                      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 space-y-3">
-                        <label className="flex items-center gap-3 text-sm text-slate-200 font-medium cursor-pointer">
+                      <div className="bg-white dark:bg-[#1E1E1E] p-4 rounded-lg border border-black/10 dark:border-white/10 space-y-3">
+                        <label className="flex items-center gap-3 text-sm text-foreground dark:text-white font-medium cursor-pointer">
                           <input 
                             type="checkbox"
                             checked={shareConfig.reports?.unmappedUrls?.enabled ?? false}
@@ -804,15 +804,15 @@ export default function CrawlerClient({
                                 unmappedUrls: { ...(prev.reports?.unmappedUrls || {}), enabled: e.target.checked }
                               }
                             }))}
-                            className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
+                            className="rounded border-black/20 dark:border-white/20 bg-white dark:bg-[#1E1E1E] text-[#E80C08] focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
                           />
                           Unmapped URLs (Old site URLs missing in New site)
                         </label>
                       </div>
 
                       {/* New URLs Not Mapped */}
-                      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 space-y-3">
-                        <label className="flex items-center gap-3 text-sm text-slate-200 font-medium cursor-pointer">
+                      <div className="bg-white dark:bg-[#1E1E1E] p-4 rounded-lg border border-black/10 dark:border-white/10 space-y-3">
+                        <label className="flex items-center gap-3 text-sm text-foreground dark:text-white font-medium cursor-pointer">
                           <input 
                             type="checkbox"
                             checked={shareConfig.reports?.newUrlsNotMapped?.enabled ?? false}
@@ -823,7 +823,7 @@ export default function CrawlerClient({
                                 newUrlsNotMapped: { ...(prev.reports?.newUrlsNotMapped || {}), enabled: e.target.checked }
                               }
                             }))}
-                            className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
+                            className="rounded border-black/20 dark:border-white/20 bg-white dark:bg-[#1E1E1E] text-[#E80C08] focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
                           />
                           New URLs Not Mapped (New site URLs missing in Old site)
                         </label>
@@ -835,7 +835,7 @@ export default function CrawlerClient({
               </div>
             </div>
 
-            <div className="mt-8 pt-4 border-t border-slate-800 flex justify-between gap-3">
+            <div className="mt-8 pt-4 border-t border-black/10 dark:border-white/10 flex justify-between gap-3">
               {isShared ? (
                 <button
                   onClick={handleStopSharing}
@@ -848,14 +848,14 @@ export default function CrawlerClient({
               <div className="flex gap-3">
                 <button
                   onClick={() => setIsShareOpen(false)}
-                  className="px-4 py-2.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-slate-300 text-sm font-semibold transition-colors"
+                  className="px-4 py-2.5 rounded-lg border border-black/10 dark:border-white/10 hover:bg-black/5 dark:bg-white/5 text-black-80 dark:text-white/80 text-sm font-semibold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleShareSubmit}
                   disabled={isSharing || (!isShared && !sharePassword)}
-                  className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold transition-all shadow-md shadow-indigo-600/20"
+                  className="px-5 py-2.5 rounded-lg bg-[#E80C08] hover:bg-indigo-700 disabled:opacity-50 text-foreground dark:text-white text-sm font-semibold transition-all shadow-md shadow-indigo-600/20"
                 >
                   {isSharing ? "Saving..." : isShared ? "Update Share Settings" : "Share Project"}
                 </button>
@@ -866,18 +866,18 @@ export default function CrawlerClient({
       )}
 
       {isExportOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-800 mb-6">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-md bg-white dark:bg-[#1C1C1C] border border-black/[0.06] dark:border-white/[0.08] rounded-2xl p-6 shadow-2xl relative overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center pb-4 border-b border-black/10 dark:border-white/10 mb-6">
+              <h3 className="text-xl font-bold text-foreground dark:text-white flex items-center gap-2">
+                <svg className="w-5 h-5 text-[#E80C08]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
                 Export Migration Data
               </h3>
               <button
                 onClick={() => setIsExportOpen(false)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-black-60 dark:text-white/60 hover:text-foreground dark:text-white transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -886,17 +886,17 @@ export default function CrawlerClient({
             </div>
 
             <div className="space-y-4">
-              <p className="text-sm text-slate-400 mb-2">
+              <p className="text-sm text-black-60 dark:text-white/60 mb-2">
                 Download CSV reports for your migration project to help identify missing SEO configurations.
               </p>
 
               {project.auditType === "MIGRATION" && (
                 <div className="mb-4">
-                  <label className="block text-xs font-medium text-slate-400 mb-2">Select Site to Export for Metadata</label>
+                  <label className="block text-xs font-medium text-black-60 dark:text-white/60 mb-2">Select Site to Export for Metadata</label>
                   <select
                     value={exportSiteFilter}
                     onChange={(e) => setExportSiteFilter(e.target.value as any)}
-                    className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+                    className="bg-white dark:bg-[#1E1E1E] border border-black/20 dark:border-white/20 text-black-80 dark:text-white/80 text-sm rounded-lg focus:ring-indigo-500 focus:border-[#E80C08] block w-full p-2.5"
                   >
                     <option value="ALL">All Sites (Old & New)</option>
                     <option value="OLD">Old Site Only</option>
@@ -905,33 +905,33 @@ export default function CrawlerClient({
                 </div>
               )}
 
-              <div className="mb-4 border-b border-slate-800 pb-4">
-                <label className="block text-xs font-medium text-slate-400 mb-2">Include URLs missing:</label>
+              <div className="mb-4 border-b border-black/10 dark:border-white/10 pb-4">
+                <label className="block text-xs font-medium text-black-60 dark:text-white/60 mb-2">Include URLs missing:</label>
                 <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm text-black-80 dark:text-white/80 cursor-pointer">
                     <input 
                       type="checkbox" 
                       checked={exportMissingTypes.title} 
                       onChange={(e) => setExportMissingTypes((prev: any) => ({...prev, title: e.target.checked}))} 
-                      className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
+                      className="rounded border-black/20 dark:border-white/20 bg-white dark:bg-[#1E1E1E] text-[#E80C08] focus:ring-indigo-500/50 cursor-pointer" 
                     />
                     Title
                   </label>
-                  <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm text-black-80 dark:text-white/80 cursor-pointer">
                     <input 
                       type="checkbox" 
                       checked={exportMissingTypes.description} 
                       onChange={(e) => setExportMissingTypes((prev: any) => ({...prev, description: e.target.checked}))} 
-                      className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
+                      className="rounded border-black/20 dark:border-white/20 bg-white dark:bg-[#1E1E1E] text-[#E80C08] focus:ring-indigo-500/50 cursor-pointer" 
                     />
                     Description
                   </label>
-                  <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm text-black-80 dark:text-white/80 cursor-pointer">
                     <input 
                       type="checkbox" 
                       checked={exportMissingTypes.canonical} 
                       onChange={(e) => setExportMissingTypes((prev: any) => ({...prev, canonical: e.target.checked}))} 
-                      className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
+                      className="rounded border-black/20 dark:border-white/20 bg-white dark:bg-[#1E1E1E] text-[#E80C08] focus:ring-indigo-500/50 cursor-pointer" 
                     />
                     Canonical
                   </label>
@@ -940,13 +940,13 @@ export default function CrawlerClient({
 
               <button
                 onClick={exportMissingMetadata}
-                className="w-full flex items-center justify-between p-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-indigo-500/50 rounded-xl transition-all group"
+                className="w-full flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 hover:bg-black/5 dark:bg-white/5 border border-black/20 dark:border-white/20 hover:border-[#E80C08]/50 rounded-xl transition-all group"
               >
                 <div className="text-left">
-                  <h4 className="text-sm font-semibold text-white group-hover:text-indigo-300 transition-colors">Missing Metadata URLs</h4>
-                  <p className="text-xs text-slate-500 mt-1">Export URLs missing titles, descriptions, or canonicals.</p>
+                  <h4 className="text-sm font-semibold text-foreground dark:text-white group-hover:text-[#E80C08] transition-colors">Missing Metadata URLs</h4>
+                  <p className="text-xs text-black-40 dark:text-white/40 mt-1">Export URLs missing titles, descriptions, or canonicals.</p>
                 </div>
-                <svg className="w-5 h-5 text-slate-500 group-hover:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-black-40 dark:text-white/40 group-hover:text-[#E80C08]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
               </button>
@@ -954,13 +954,13 @@ export default function CrawlerClient({
               {project.auditType === "MIGRATION" && (
                 <button
                   onClick={exportUnmappedUrls}
-                  className="w-full flex items-center justify-between p-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 rounded-xl transition-all group"
+                  className="w-full flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 hover:bg-black/5 dark:bg-white/5 border border-black/20 dark:border-white/20 hover:border-emerald-500/50 rounded-xl transition-all group"
                 >
                   <div className="text-left">
-                    <h4 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">Unmapped URLs</h4>
-                    <p className="text-xs text-slate-500 mt-1">Export URLs present in old site but missing in new site.</p>
+                    <h4 className="text-sm font-semibold text-foreground dark:text-white group-hover:text-emerald-300 transition-colors">Unmapped URLs</h4>
+                    <p className="text-xs text-black-40 dark:text-white/40 mt-1">Export URLs present in old site but missing in new site.</p>
                   </div>
-                  <svg className="w-5 h-5 text-slate-500 group-hover:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-black-40 dark:text-white/40 group-hover:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
                 </button>
@@ -973,11 +973,11 @@ export default function CrawlerClient({
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 flex flex-col gap-4">
           {project.auditType === "MIGRATION" && (
-            <div className="bg-indigo-900/20 p-5 rounded-xl border border-indigo-500/20 flex-1 flex flex-col justify-center">
-              <h3 className="text-indigo-400/80 font-medium mb-1 text-xs uppercase tracking-wider">
+            <div className="bg-indigo-900/20 p-5 rounded-xl border border-[#E80C08]/20 flex-1 flex flex-col justify-center">
+              <h3 className="text-[#E80C08]/80 font-medium mb-1 text-xs uppercase tracking-wider">
                 Old Site Pages
               </h3>
-              <p className="text-3xl font-bold text-indigo-400">
+              <p className="text-3xl font-bold text-[#E80C08]">
                 {oldPages.length}
               </p>
             </div>
@@ -1004,20 +1004,20 @@ export default function CrawlerClient({
 
         <div className="lg:col-span-3">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-white">
+            <h2 className="text-xl font-semibold text-foreground dark:text-white">
               Global Analytics
             </h2>
             {project.auditType === "MIGRATION" && (
-              <div className="flex items-center space-x-2 bg-slate-900 p-1 rounded-full border border-slate-700">
+              <div className="flex items-center space-x-2 bg-white dark:bg-[#1E1E1E] p-1 rounded-full border border-black/20 dark:border-white/20">
                 <button
                   onClick={() => setAnalyticsSite("OLD")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${analyticsSite === "OLD" ? "bg-indigo-500 text-white" : "text-slate-400 hover:text-white"}`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${analyticsSite === "OLD" ? "bg-[#E80C08] text-foreground dark:text-white" : "text-black-60 dark:text-white/60 hover:text-foreground dark:text-white"}`}
                 >
                   OLD SITE
                 </button>
                 <button
                   onClick={() => setAnalyticsSite("NEW")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${analyticsSite === "NEW" ? "bg-emerald-500 text-white" : "text-slate-400 hover:text-white"}`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${analyticsSite === "NEW" ? "bg-emerald-500 text-foreground dark:text-white" : "text-black-60 dark:text-white/60 hover:text-foreground dark:text-white"}`}
                 >
                   NEW SITE
                 </button>
@@ -1031,12 +1031,12 @@ export default function CrawlerClient({
       </div>
 
       {/* Controls */}
-      <div className="bg-slate-800/30 p-6 rounded-xl border border-slate-700 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+      <div className="bg-black/5 dark:bg-white/5 p-6 rounded-xl border border-black/20 dark:border-white/20 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-white mb-2">
+          <h2 className="text-xl font-semibold text-foreground dark:text-white mb-2">
             Migration Controls
           </h2>
-          <p className="text-sm text-slate-400 max-w-xl">
+          <p className="text-sm text-black-60 dark:text-white/60 max-w-xl">
             Parse sitemaps to discover URLs, crawl them to extract metadata, and
             run the SEO audit to generate the scores above.
           </p>
@@ -1046,7 +1046,7 @@ export default function CrawlerClient({
           <button
             onClick={handleParseSitemaps}
             disabled={isParsing}
-            className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
+            className="bg-[#E80C08] hover:bg-indigo-700 disabled:opacity-50 text-foreground dark:text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
           >
             {isParsing ? "Discovering..." : "1. Discover URLs"}
           </button>
@@ -1055,7 +1055,7 @@ export default function CrawlerClient({
             <button
               onClick={() => handleStartCrawl(false)}
               disabled={isCrawling}
-              className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
+              className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-foreground dark:text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
             >
               {isCrawling
                 ? `Crawling (${Math.round(crawlProgress)}%)`
@@ -1073,7 +1073,7 @@ export default function CrawlerClient({
                 }
               }}
               disabled={isCrawling || pages.length === 0}
-              className="bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
+              className="bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-foreground dark:text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
             >
               {isCrawling
                 ? `Recrawling (${Math.round(crawlProgress)}%)`
@@ -1084,7 +1084,7 @@ export default function CrawlerClient({
           <button
             onClick={handleRunAudit}
             disabled={isAuditing || isCrawling || isParsing}
-            className="bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
+            className="bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-foreground dark:text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
           >
             {isAuditing ? "Generating..." : "3. Run Audit"}
           </button>
@@ -1092,9 +1092,9 @@ export default function CrawlerClient({
           <button
             onClick={() => setIsShareOpen(true)}
             disabled={isAuditing || isCrawling || isParsing || pages.length === 0}
-            className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2 border border-slate-600"
+            className="bg-black/10 dark:bg-white/10 hover:bg-slate-600 disabled:opacity-50 text-foreground dark:text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2 border border-slate-600"
           >
-            <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-black-80 dark:text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
             Share Report
@@ -1103,9 +1103,9 @@ export default function CrawlerClient({
           <button
             onClick={() => setIsExportOpen(true)}
             disabled={isAuditing || isCrawling || isParsing || pages.length === 0}
-            className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2 border border-slate-600"
+            className="bg-black/10 dark:bg-white/10 hover:bg-slate-600 disabled:opacity-50 text-foreground dark:text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2 border border-slate-600"
           >
-            <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-black-80 dark:text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
             Export Data
@@ -1114,25 +1114,25 @@ export default function CrawlerClient({
       </div>
 
       {/* Tabs and Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-800/30 p-4 rounded-xl border border-slate-700">
-        <div className="flex space-x-1 bg-slate-900 p-1 rounded-lg w-max border border-slate-700">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-black/5 dark:bg-white/5 p-4 rounded-xl border border-black/20 dark:border-white/20">
+        <div className="flex space-x-1 bg-white dark:bg-[#1E1E1E] p-1 rounded-lg w-max border border-black/20 dark:border-white/20">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setActiveTab("ISSUES")}
-              className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-colors ${activeTab === "ISSUES" ? "bg-indigo-500/20 text-indigo-400" : "text-slate-400 hover:bg-slate-800"}`}
+              className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-colors ${activeTab === "ISSUES" ? "bg-[#FFF5F5] text-[#E80C08]" : "text-black-60 dark:text-white/60 hover:bg-black/5 dark:bg-white/5"}`}
             >
               Detected Issues ({issues?.length || 0})
             </button>
             <button
               onClick={() => setActiveTab("PAGES")}
-              className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-colors ${activeTab === "PAGES" ? "bg-indigo-500/20 text-indigo-400" : "text-slate-400 hover:bg-slate-800"}`}
+              className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-colors ${activeTab === "PAGES" ? "bg-[#FFF5F5] text-[#E80C08]" : "text-black-60 dark:text-white/60 hover:bg-black/5 dark:bg-white/5"}`}
             >
               Crawled Pages ({pages.length})
             </button>
             {project.auditType === "MIGRATION" && (
               <button
                 onClick={() => setActiveTab("DIFF")}
-                className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-colors ${activeTab === "DIFF" ? "bg-indigo-500/20 text-indigo-400" : "text-slate-400 hover:bg-slate-800"}`}
+                className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-colors ${activeTab === "DIFF" ? "bg-[#FFF5F5] text-[#E80C08]" : "text-black-60 dark:text-white/60 hover:bg-black/5 dark:bg-white/5"}`}
               >
                 Migration Diff
               </button>
@@ -1147,12 +1147,12 @@ export default function CrawlerClient({
               placeholder="Search URLs..."
               value={pageSearchQuery}
               onChange={(e) => setPageSearchQuery(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 w-full sm:w-48"
+              className="bg-white dark:bg-[#1E1E1E] border border-black/20 dark:border-white/20 text-black-80 dark:text-white/80 text-sm rounded-lg focus:ring-indigo-500 focus:border-[#E80C08] block p-2 w-full sm:w-48"
             />
             <select
               value={pageStatusFilter}
               onChange={(e) => setPageStatusFilter(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2"
+              className="bg-white dark:bg-[#1E1E1E] border border-black/20 dark:border-white/20 text-black-80 dark:text-white/80 text-sm rounded-lg focus:ring-indigo-500 focus:border-[#E80C08] block p-2"
             >
               <option value="ALL">All Statuses</option>
               <option value="SUCCESS">Success Only</option>
@@ -1160,16 +1160,16 @@ export default function CrawlerClient({
               <option value="PENDING">Pending Only</option>
             </select>
             {project.auditType === "MIGRATION" && (
-              <div className="flex items-center space-x-2 bg-slate-900 p-1 rounded-full border border-slate-700">
+              <div className="flex items-center space-x-2 bg-white dark:bg-[#1E1E1E] p-1 rounded-full border border-black/20 dark:border-white/20">
                 <button
                   onClick={() => setSiteFilter("OLD")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${siteFilter === "OLD" ? "bg-slate-700 text-indigo-300" : "text-slate-400 hover:text-white"}`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${siteFilter === "OLD" ? "bg-black/10 dark:bg-white/10 text-[#E80C08]" : "text-black-60 dark:text-white/60 hover:text-foreground dark:text-white"}`}
                 >
                   OLD SITE
                 </button>
                 <button
                   onClick={() => setSiteFilter("NEW")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${siteFilter === "NEW" ? "bg-slate-700 text-emerald-300" : "text-slate-400 hover:text-white"}`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-colors ${siteFilter === "NEW" ? "bg-black/10 dark:bg-white/10 text-emerald-300" : "text-black-60 dark:text-white/60 hover:text-foreground dark:text-white"}`}
                 >
                   NEW SITE
                 </button>
@@ -1230,24 +1230,24 @@ export default function CrawlerClient({
                     return (
                       <div
                         key={cat}
-                        className="bg-slate-800/30 rounded-xl border border-slate-700 overflow-hidden transition-all duration-200 shadow-sm"
+                        className="bg-black/5 dark:bg-white/5 rounded-xl border border-black/20 dark:border-white/20 overflow-hidden transition-all duration-200 shadow-sm"
                       >
                         <button
                           onClick={() => toggleCategory(cat)}
-                          className="w-full flex items-center justify-between p-4 bg-slate-800/50 hover:bg-slate-800/80 transition-colors"
+                          className="w-full flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 hover:bg-black/5 dark:bg-white/5 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="text-lg font-semibold text-white">
+                            <span className="text-lg font-semibold text-foreground dark:text-white">
                               {cat === "Static"
                                 ? "Static Pages"
                                 : `${cat} Pages`}
                             </span>
-                            <span className="bg-slate-700 text-slate-300 text-xs font-bold px-2 py-0.5 rounded-full">
+                            <span className="bg-black/10 dark:bg-white/10 text-black-80 dark:text-white/80 text-xs font-bold px-2 py-0.5 rounded-full">
                               {catPages.length}
                             </span>
                           </div>
                           <svg
-                            className={`w-5 h-5 text-slate-400 transform transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                            className={`w-5 h-5 text-black-60 dark:text-white/60 transform transition-transform ${isExpanded ? "rotate-180" : ""}`}
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -1262,9 +1262,9 @@ export default function CrawlerClient({
                         </button>
 
                         {isExpanded && (
-                          <div className="overflow-x-auto border-t border-slate-700">
+                          <div className="overflow-x-auto border-t border-black/20 dark:border-white/20">
                             <table className="w-full text-left text-sm">
-                              <thead className="bg-slate-800/50 text-slate-400 border-b border-slate-700">
+                              <thead className="bg-black/5 dark:bg-white/5 text-black-60 dark:text-white/60 border-b border-black/20 dark:border-white/20">
                                 <tr>
                                   <th className="px-4 py-3">URL</th>
                                   <th className="px-4 py-3">Site</th>
@@ -1274,18 +1274,18 @@ export default function CrawlerClient({
                                   </th>
                                 </tr>
                               </thead>
-                              <tbody className="divide-y divide-slate-800">
+                              <tbody className="divide-y divide-black/10 dark:divide-white/10">
                                 {catPages.map((page) => (
                                   <tr
                                     key={page.id}
-                                    className="hover:bg-slate-800/30 transition-colors"
+                                    className="hover:bg-black/5 dark:bg-white/5 transition-colors"
                                   >
-                                    <td className="px-4 py-3 text-slate-300 truncate max-w-xs">
+                                    <td className="px-4 py-3 text-black-80 dark:text-white/80 truncate max-w-xs">
                                       {page.url}
                                     </td>
                                     <td className="px-4 py-3">
                                       <span
-                                        className={`px-2 py-1 rounded text-[10px] font-bold tracking-wider ${page.siteType === "OLD" ? "bg-indigo-500/20 text-indigo-400" : "bg-emerald-500/20 text-emerald-400"}`}
+                                        className={`px-2 py-1 rounded text-[10px] font-bold tracking-wider ${page.siteType === "OLD" ? "bg-[#FFF5F5] text-[#E80C08]" : "bg-emerald-500/20 text-emerald-400"}`}
                                       >
                                         {page.siteType}
                                       </span>
@@ -1306,7 +1306,7 @@ export default function CrawlerClient({
                                           disabled={
                                             recrawlingPageId === page.id
                                           }
-                                          className="text-xs text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1.5 rounded transition-colors disabled:opacity-50 flex items-center gap-1"
+                                          className="text-xs text-black-60 dark:text-white/60 hover:text-foreground dark:text-white bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:bg-white/10 border border-black/20 dark:border-white/20 px-2.5 py-1.5 rounded transition-colors disabled:opacity-50 flex items-center gap-1"
                                         >
                                           {recrawlingPageId === page.id
                                             ? "..."
@@ -1315,7 +1315,7 @@ export default function CrawlerClient({
                                         {page.crawlStatus === "SUCCESS" && (
                                           <Link
                                             href={`/dashboard/${project.id}/page/${page.id}`}
-                                            className="text-sm text-indigo-400 hover:text-indigo-300 border border-indigo-500/30 hover:border-indigo-400 px-3 py-1.5 rounded transition-colors inline-block"
+                                            className="text-sm text-[#E80C08] hover:text-[#E80C08] border border-[#E80C08]/30 hover:border-indigo-400 px-3 py-1.5 rounded transition-colors inline-block"
                                           >
                                             View
                                           </Link>
@@ -1336,9 +1336,9 @@ export default function CrawlerClient({
           })()}
 
         {activeTab === "DIFF" && (
-          <div className="overflow-x-auto bg-slate-800/30 rounded-xl border border-slate-700">
+          <div className="overflow-x-auto bg-black/5 dark:bg-white/5 rounded-xl border border-black/20 dark:border-white/20">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-800/50 text-slate-400 border-b border-slate-700">
+              <thead className="bg-black/5 dark:bg-white/5 text-black-60 dark:text-white/60 border-b border-black/20 dark:border-white/20">
                 <tr>
                   <th className="px-4 py-3">Pathname</th>
                   <th className="px-4 py-3">Old URL</th>
@@ -1346,7 +1346,7 @@ export default function CrawlerClient({
                   <th className="px-4 py-3">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-black/10 dark:divide-white/10">
                 {oldPages.map((oldPage) => {
                   let path = "";
                   try {
@@ -1367,21 +1367,21 @@ export default function CrawlerClient({
                   return (
                     <tr
                       key={oldPage.id}
-                      className="hover:bg-slate-800/30 transition-colors"
+                      className="hover:bg-black/5 dark:bg-white/5 transition-colors"
                     >
-                      <td className="px-4 py-3 text-slate-300 font-medium">
+                      <td className="px-4 py-3 text-black-80 dark:text-white/80 font-medium">
                         {path}
                       </td>
-                      <td className="px-4 py-3 text-slate-400 text-xs truncate max-w-50">
+                      <td className="px-4 py-3 text-black-60 dark:text-white/60 text-xs truncate max-w-50">
                         {oldPage.url}
                       </td>
-                      <td className="px-4 py-3 text-slate-400 text-xs truncate max-w-50">
+                      <td className="px-4 py-3 text-black-60 dark:text-white/60 text-xs truncate max-w-50">
                         {newPage.url}
                       </td>
                       <td className="px-4 py-3">
                         <Link
                           href={`/dashboard/${project.id}/diff/${oldPage.id}/${newPage.id}`}
-                          className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded transition-colors shadow-sm"
+                          className="text-sm bg-[#E80C08] hover:bg-[#E80C08] text-foreground dark:text-white px-3 py-1.5 rounded transition-colors shadow-sm"
                         >
                           Compare
                         </Link>
