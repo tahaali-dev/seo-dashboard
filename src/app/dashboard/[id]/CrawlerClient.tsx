@@ -31,10 +31,39 @@ export default function CrawlerClient({
   const isShared = project?.isShared || false;
 
   const [shareConfig, setShareConfig] = useState(() => {
+    const defaultConfig = {
+      categories: [],
+      severities: [],
+      reports: {
+        crawledPages: { enabled: true, siteFilter: "ALL" },
+        missingMetadata: { enabled: false, siteFilter: "ALL", types: { title: true, description: true, canonical: true } },
+        unmappedUrls: { enabled: false },
+        newUrlsNotMapped: { enabled: false }
+      }
+    };
     try {
-      return project?.shareConfig ? JSON.parse(project.shareConfig) : { categories: [], severities: [] };
+      if (project?.shareConfig) {
+        const parsed = JSON.parse(project.shareConfig);
+        // Deep merge reports to prevent undefined errors
+        const mergedReports = {
+          crawledPages: { ...defaultConfig.reports.crawledPages, ...(parsed.reports?.crawledPages || {}) },
+          missingMetadata: {
+            ...defaultConfig.reports.missingMetadata,
+            ...(parsed.reports?.missingMetadata || {}),
+            types: { ...defaultConfig.reports.missingMetadata.types, ...(parsed.reports?.missingMetadata?.types || {}) }
+          },
+          unmappedUrls: { ...defaultConfig.reports.unmappedUrls, ...(parsed.reports?.unmappedUrls || {}) },
+          newUrlsNotMapped: { ...defaultConfig.reports.newUrlsNotMapped, ...(parsed.reports?.newUrlsNotMapped || {}) },
+        };
+        return { 
+          ...defaultConfig, 
+          ...parsed, 
+          reports: mergedReports
+        };
+      }
+      return defaultConfig;
     } catch {
-      return { categories: [], severities: [] };
+      return defaultConfig;
     }
   });
 
@@ -51,6 +80,95 @@ export default function CrawlerClient({
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [analyticsSite, setAnalyticsSite] = useState<"OLD" | "NEW">("NEW");
   const [recrawlingPageId, setRecrawlingPageId] = useState<string | null>(null);
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const [exportSiteFilter, setExportSiteFilter] = useState<"ALL" | "OLD" | "NEW">("ALL");
+
+  const [exportMissingTypes, setExportMissingTypes] = useState({
+    title: true,
+    description: true,
+    canonical: true
+  });
+
+  const exportMissingMetadata = () => {
+    const missingPages = pages.filter((page: any) => {
+      if (exportSiteFilter !== "ALL" && page.siteType !== exportSiteFilter) return false;
+      let metadata = { title: "", description: "", canonical: "" };
+      try { if (page.metadata) metadata = JSON.parse(page.metadata); } catch (e) {}
+      
+      const missingTitle = !metadata.title || metadata.title.trim() === "";
+      const missingDesc = !metadata.description || metadata.description.trim() === "";
+      const missingCanonical = !metadata.canonical || metadata.canonical.trim() === "";
+      
+      return (
+        (exportMissingTypes.title && missingTitle) ||
+        (exportMissingTypes.description && missingDesc) ||
+        (exportMissingTypes.canonical && missingCanonical)
+      );
+    });
+
+    let headers = ["URL", "Site Type"];
+    if (exportMissingTypes.title) headers.push("Missing Title");
+    if (exportMissingTypes.description) headers.push("Missing Description");
+    if (exportMissingTypes.canonical) headers.push("Missing Canonical");
+    
+    let csvContent = headers.join(",") + "\n";
+    
+    missingPages.forEach((page: any) => {
+      let metadata = { title: "", description: "", canonical: "" };
+      try { if (page.metadata) metadata = JSON.parse(page.metadata); } catch (e) {}
+      const missingTitle = !metadata.title || metadata.title.trim() === "" ? "Yes" : "No";
+      const missingDesc = !metadata.description || metadata.description.trim() === "" ? "Yes" : "No";
+      const missingCanonical = !metadata.canonical || metadata.canonical.trim() === "" ? "Yes" : "No";
+      
+      const row = [`"${page.url}"`, `"${page.siteType}"`];
+      if (exportMissingTypes.title) row.push(`"${missingTitle}"`);
+      if (exportMissingTypes.description) row.push(`"${missingDesc}"`);
+      if (exportMissingTypes.canonical) row.push(`"${missingCanonical}"`);
+      
+      csvContent += row.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `missing_metadata_${project.id}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setIsExportOpen(false);
+  };
+
+  const exportUnmappedUrls = () => {
+    const oldPages = pages.filter((p: any) => p.siteType === "OLD");
+    const newPages = pages.filter((p: any) => p.siteType === "NEW");
+    
+    const unmappedPages = oldPages.filter((oldPage: any) => {
+      let path = "";
+      try { path = new URL(oldPage.url).pathname; } catch (e) {}
+      const newPage = newPages.find((p: any) => {
+        try { return new URL(p.url).pathname === path; } catch (e) { return false; }
+      });
+      return !newPage;
+    });
+
+    let csvContent = "Old URL,Path\n";
+    unmappedPages.forEach((page: any) => {
+      let path = "";
+      try { path = new URL(page.url).pathname; } catch (e) {}
+      csvContent += `"${page.url}","${path}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `unmapped_urls_${project.id}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setIsExportOpen(false);
+  };
 
   const toggleCategory = (cat: string) => {
     setExpandedCategories((prev) =>
@@ -563,6 +681,156 @@ export default function CrawlerClient({
                       ))}
                     </div>
                   </div>
+                  
+                  {project.auditType === "MIGRATION" && (
+                    <div className="mt-6 pt-6 border-t border-slate-800 space-y-4">
+                      <h4 className="text-sm font-semibold text-slate-300">Migration Data Views</h4>
+                      
+                      {/* Total Crawled Pages */}
+                      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 space-y-3">
+                        <label className="flex items-center gap-3 text-sm text-slate-200 font-medium cursor-pointer">
+                          <input 
+                            type="checkbox"
+                            checked={shareConfig.reports?.crawledPages?.enabled ?? true}
+                            onChange={(e) => setShareConfig(prev => ({
+                              ...prev,
+                              reports: { 
+                                ...(prev.reports || {}), 
+                                crawledPages: { ...(prev.reports?.crawledPages || {}), enabled: e.target.checked }
+                              }
+                            }))}
+                            className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
+                          />
+                          Total Crawled Pages
+                        </label>
+                        {shareConfig.reports?.crawledPages?.enabled && (
+                          <div className="pl-7 space-y-2">
+                            <label className="block text-xs text-slate-400">Site to show</label>
+                            <select
+                              value={shareConfig.reports?.crawledPages?.siteFilter || "ALL"}
+                              onChange={(e) => setShareConfig(prev => ({
+                                ...prev,
+                                reports: { 
+                                  ...(prev.reports || {}), 
+                                  crawledPages: { ...(prev.reports?.crawledPages || {}), siteFilter: e.target.value }
+                                }
+                              }))}
+                              className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2"
+                            >
+                              <option value="ALL">All Sites (Old & New)</option>
+                              <option value="OLD">Old Site Only</option>
+                              <option value="NEW">New Site Only</option>
+                            </select>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Missing Metadata */}
+                      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 space-y-3">
+                        <label className="flex items-center gap-3 text-sm text-slate-200 font-medium cursor-pointer">
+                          <input 
+                            type="checkbox"
+                            checked={shareConfig.reports?.missingMetadata?.enabled ?? false}
+                            onChange={(e) => setShareConfig(prev => ({
+                              ...prev,
+                              reports: { 
+                                ...(prev.reports || {}), 
+                                missingMetadata: { ...(prev.reports?.missingMetadata || {}), enabled: e.target.checked }
+                              }
+                            }))}
+                            className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
+                          />
+                          Missing Metadata URLs
+                        </label>
+                        {shareConfig.reports?.missingMetadata?.enabled && (
+                          <div className="pl-7 space-y-4">
+                            <div>
+                              <label className="block text-xs text-slate-400 mb-2">Site to check</label>
+                              <select
+                                value={shareConfig.reports?.missingMetadata?.siteFilter || "ALL"}
+                                onChange={(e) => setShareConfig(prev => ({
+                                  ...prev,
+                                  reports: { 
+                                    ...(prev.reports || {}), 
+                                    missingMetadata: { ...(prev.reports?.missingMetadata || {}), siteFilter: e.target.value }
+                                  }
+                                }))}
+                                className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2"
+                              >
+                                <option value="ALL">All Sites (Old & New)</option>
+                                <option value="OLD">Old Site Only</option>
+                                <option value="NEW">New Site Only</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs text-slate-400 mb-2">Include URLs missing:</label>
+                              <div className="flex flex-wrap gap-4">
+                                {["title", "description", "canonical"].map(type => (
+                                  <label key={type} className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                                    <input 
+                                      type="checkbox" 
+                                      checked={shareConfig.reports?.missingMetadata?.types?.[type] ?? true} 
+                                      onChange={(e) => setShareConfig(prev => ({
+                                        ...prev,
+                                        reports: { 
+                                          ...(prev.reports || {}), 
+                                          missingMetadata: { 
+                                            ...(prev.reports?.missingMetadata || {}), 
+                                            types: { ...(prev.reports?.missingMetadata?.types || {}), [type]: e.target.checked }
+                                          }
+                                        }
+                                      }))} 
+                                      className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
+                                    />
+                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Unmapped URLs */}
+                      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 space-y-3">
+                        <label className="flex items-center gap-3 text-sm text-slate-200 font-medium cursor-pointer">
+                          <input 
+                            type="checkbox"
+                            checked={shareConfig.reports?.unmappedUrls?.enabled ?? false}
+                            onChange={(e) => setShareConfig(prev => ({
+                              ...prev,
+                              reports: { 
+                                ...(prev.reports || {}), 
+                                unmappedUrls: { ...(prev.reports?.unmappedUrls || {}), enabled: e.target.checked }
+                              }
+                            }))}
+                            className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
+                          />
+                          Unmapped URLs (Old site URLs missing in New site)
+                        </label>
+                      </div>
+
+                      {/* New URLs Not Mapped */}
+                      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 space-y-3">
+                        <label className="flex items-center gap-3 text-sm text-slate-200 font-medium cursor-pointer">
+                          <input 
+                            type="checkbox"
+                            checked={shareConfig.reports?.newUrlsNotMapped?.enabled ?? false}
+                            onChange={(e) => setShareConfig(prev => ({
+                              ...prev,
+                              reports: { 
+                                ...(prev.reports || {}), 
+                                newUrlsNotMapped: { ...(prev.reports?.newUrlsNotMapped || {}), enabled: e.target.checked }
+                              }
+                            }))}
+                            className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer w-4 h-4"
+                          />
+                          New URLs Not Mapped (New site URLs missing in Old site)
+                        </label>
+                      </div>
+
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -592,6 +860,111 @@ export default function CrawlerClient({
                   {isSharing ? "Saving..." : isShared ? "Update Share Settings" : "Share Project"}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isExportOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-800 mb-6">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Export Migration Data
+              </h3>
+              <button
+                onClick={() => setIsExportOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-sm text-slate-400 mb-2">
+                Download CSV reports for your migration project to help identify missing SEO configurations.
+              </p>
+
+              {project.auditType === "MIGRATION" && (
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-slate-400 mb-2">Select Site to Export for Metadata</label>
+                  <select
+                    value={exportSiteFilter}
+                    onChange={(e) => setExportSiteFilter(e.target.value as any)}
+                    className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+                  >
+                    <option value="ALL">All Sites (Old & New)</option>
+                    <option value="OLD">Old Site Only</option>
+                    <option value="NEW">New Site Only</option>
+                  </select>
+                </div>
+              )}
+
+              <div className="mb-4 border-b border-slate-800 pb-4">
+                <label className="block text-xs font-medium text-slate-400 mb-2">Include URLs missing:</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={exportMissingTypes.title} 
+                      onChange={(e) => setExportMissingTypes(prev => ({...prev, title: e.target.checked}))} 
+                      className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
+                    />
+                    Title
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={exportMissingTypes.description} 
+                      onChange={(e) => setExportMissingTypes(prev => ({...prev, description: e.target.checked}))} 
+                      className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
+                    />
+                    Description
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={exportMissingTypes.canonical} 
+                      onChange={(e) => setExportMissingTypes(prev => ({...prev, canonical: e.target.checked}))} 
+                      className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer" 
+                    />
+                    Canonical
+                  </label>
+                </div>
+              </div>
+
+              <button
+                onClick={exportMissingMetadata}
+                className="w-full flex items-center justify-between p-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-indigo-500/50 rounded-xl transition-all group"
+              >
+                <div className="text-left">
+                  <h4 className="text-sm font-semibold text-white group-hover:text-indigo-300 transition-colors">Missing Metadata URLs</h4>
+                  <p className="text-xs text-slate-500 mt-1">Export URLs missing titles, descriptions, or canonicals.</p>
+                </div>
+                <svg className="w-5 h-5 text-slate-500 group-hover:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </button>
+
+              {project.auditType === "MIGRATION" && (
+                <button
+                  onClick={exportUnmappedUrls}
+                  className="w-full flex items-center justify-between p-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 rounded-xl transition-all group"
+                >
+                  <div className="text-left">
+                    <h4 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">Unmapped URLs</h4>
+                    <p className="text-xs text-slate-500 mt-1">Export URLs present in old site but missing in new site.</p>
+                  </div>
+                  <svg className="w-5 h-5 text-slate-500 group-hover:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -725,6 +1098,17 @@ export default function CrawlerClient({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
             Share Report
+          </button>
+
+          <button
+            onClick={() => setIsExportOpen(true)}
+            disabled={isAuditing || isCrawling || isParsing || pages.length === 0}
+            className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2 border border-slate-600"
+          >
+            <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            Export Data
           </button>
         </div>
       </div>
